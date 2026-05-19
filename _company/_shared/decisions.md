@@ -73,3 +73,11 @@ _세션: 2026-05-19T02-43_
 - CEO는 PayPal Client ID 및 Secret 정보를 확보하여 외부 연결 설정을 완료해야 한다.
 - Researcher는 URL이 제공되는 즉시, 기술/수익화 심층 분석을 수행한다.
 _세션: 2026-05-19T02-49_
+
+## [2026-05-19] 새로운 분석 대상 URL이 접수되었습니다. 
+
+**[분석 대상 URL]**: https://shopping.
+- 매출 분석을 위해 PayPal Client ID와 Secret을 입력한다.
+- PayPal Developer Dashboard에서 Client ID/Secret을 복사하여 외부 연결 패널에 입력한다.
+- 외부 연결 기능을 통해 즉시 매출 분석을 진행한다.
+_세션: 2026-05-19T02-53_
