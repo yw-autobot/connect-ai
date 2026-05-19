@@ -27,6 +27,17 @@
       "sessionDir": "2026-05-19T02-25",
       "evidence": "완료: sessions/2026-05-19T02-25/_report.md\n- 레오: 사용자 채널의 전반적인 성과 분석을 요청합니다. YouTube Analytics 데이터를 기반으로 가장 높은 ROI를 보인 콘텐츠 유형, 시청자\n- 현빈: 사용자 채널의 전반적인 성과 분석을 요청합니다. YouTube Analytics 데이터를 기반으로 가장 높은 ROI를 보인 콘텐츠 유형, 시청자\n\nCEO 종합 요점: ## 🗂 작업 라운드 — 누가 뭐 했나\n\n### 📺 레오 _(Head of YouTube)_\n> 📋 **지시**: 사용자 채널의 전반적인 성과 분석을 요청합니다. YouTube Analytics 데이터를 기반으로 가장 높은 ROI를 보인 콘텐츠 유형, 시청자들이 반응한 후킹 요소(Hooking Elements), 그리고 이를 바탕으로 다음 3~5개 영",
       "completedAt": "2026-05-19T02:26:03.751Z"
+    },
+    {
+      "id": "20260519023106-vqn7",
+      "title": "종합 채널 성과 분석 재실행",
+      "description": "시스템 개선 됐으면 다시 채널 분석해줘",
+      "owner": "user",
+      "createdAt": "2026-05-19T02:31:06.328Z",
+      "status": "pending",
+      "nudges": 0,
+      "priority": "normal",
+      "preAlarmsSent": []
     }
   ]
 }
