@@ -1,0 +1,21 @@
+# Trend pioneer Design Guide - Figma Source File
+## 🎨 Visual System Components
+### Color Swatches (Hex Code & Usage)
+- Primary Background: #1A1A1A [Usage: Global BG]
+- Accent Danger: #FF5722 [Usage: Pain Point, Warning Text]
+- Accent Success: #4CAF50 [Usage: Solution Highlight, CTA Button]
+- Neutral White/Text: #E0E0E0
+
+### Typography Styles (Pretendard Family)
+- H1_Impact: Pretendard Bold | Min Size 72px | Color: #FF5722 (High Contrast)
+- H2_Keypoint: Pretendard SemiBold | Min Size 48px | Color: #E0E0E0
+- Body_Detail: Pretendard Regular | Max Size 24px | Color: #E0E0E0
+
+### Layout Grids (16:9)
+- Grid A (Problem Focus): Left side (Pain Point), Right side (Solution). Asymmetric, diagonal line dividing the space.
+- Grid B (Result Focus): Center stacked H1 $\rightarrow$ Subtext. Minimalist, maximum impact on the outcome number.
+
+## 📑 Usage Guidelines Checklist
+[ ] Must use a strong contrasting color pair: Orange/Green.
+[ ] Never show vague statements; always quantify the benefit or problem size.
+[ ] Always place the 'Pain Point' first to guarantee retention through understanding.
