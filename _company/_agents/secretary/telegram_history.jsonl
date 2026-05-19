@@ -24,3 +24,5 @@
 {"role":"assistant","text":"(CEO에게 전달) 📨 CEO에게 전달했어요 — 사이트 분석 작업 들어갑니다","ts":1779158974997}
 {"role":"user","text":"https://shopping.tubefactory.kr/","ts":1779159178669}
 {"role":"assistant","text":"(CEO에게 전달) 📨 CEO에게 전달했어요 — 웹사이트 수익화 분석 작업 들어갑니다.","ts":1779159200046}
+{"role":"user","text":"쇼핑팩토리 사이트처럼 만들수 있을것 같아?","ts":1779161393253}
+{"role":"assistant","text":"(CEO에게 전달) 📨 CEO에게 전달했어요 — 쇼핑팩토리 스타일 웹사이트 구축 가능성 분석을 요청합니다.","ts":1779161412739}
