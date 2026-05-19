@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    {
+      "id": "20260519013408-d9l8",
+      "title": "연결된 API 작동 상태 점검",
+      "description": "api 연결된것들 잘 됐는지 파악해줘",
+      "owner": "agent",
+      "createdAt": "2026-05-19T01:34:08.688Z",
+      "status": "done",
+      "nudges": 0,
+      "priority": "normal",
+      "preAlarmsSent": [],
+      "sessionDir": "2026-05-19T01-34",
+      "evidence": "완료: sessions/2026-05-19T01-34/_report.md\n- 영숙: 연결된 모든 API(YouTube Analytics, 캘린더 등)의 현재 작동 상태 및 데이터 전송 여부를 종합적으로 확인하고, 연결 문제나 오\n\nCEO 종합 요점: 📱 영숙: 작업 시작합니다. 😊 사장님, 요청하신 대로 현재 연결된 모든 API의 작동 상태와 데이터 전송 여부를 종합적으로 점검했습니다. 확인된 내용을 핵심만 정리해서 보고드립니다.\n\n### 📊 API 통합 현황 브리핑 (Status Check)\n\n현재까지 시스템 컨텍스트 및 설정을 기준으로 점검한 결과입니다.\n\n**✅ 정상 또는 제한적 작동:**\n",
+      "completedAt": "2026-05-19T01:34:51.249Z"
+    }
+  ]
+}
