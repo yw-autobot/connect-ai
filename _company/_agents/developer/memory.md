@@ -17,3 +17,4 @@ _코다리 에이전트만 읽고 쓰는 개인 노트. 학습·교훈·자주 �
 - [2026-05-19] Designer가 확정한 Funnel의 UI/UX 요구사항(Funnel_MVP_Schema)과 코다리가 설계한 MVP 랜딩 페이지 아키텍처를 기반으로, 'Contrarian Warning' 메시지를 가장 효과적으로 삽입할 수 있는 CTA 및 섹션 구성을 코드로 구현하고 전환 추적 로직을 추가하여 MVP 랜딩 페이지 개발을 시작하라. → 산출물 sessions/2026-05-19T08-16/developer.md
 - [2026-05-19] Designer가 제공할 최종 디자인 시안 및 Design System 스펙을 기반으로 Next.js 랜딩 페이지 컴포넌트의 초기 구조와 스타일링 마스터 템플릿을 업데이트하고, 실제 코드로 구현을 시작할 준비를 하라. → 산출물 sessions/2026-05-19T08-31/developer.md
 - [2026-05-19] Designer가 확정한 '컨셉 A'를 기반으로 Next.js 랜딩 페이지의 핵심 전환 요소(Pricing, CTA 섹션) 디자인 시스템을 적용하여 코드로 즉시 구현하고 전환 추적 로직을 통합하라. → 산출물 sessions/2026-05-19T09-46/developer.md
+- [2026-05-19] Designer가 확정한 'Meta Thumbnail System Blueprint V2.0' 및 Design System 스펙을 기반으로, Next.js 랜딩 페이지의 핵심 전환 컴포넌트(Pricing, CTA 섹션)를 즉시 구현하고 전환 추적 로직을 통합하여 코드로 완성하라. → 산출물 sessions/2026-05-19T10-16/developer.md
