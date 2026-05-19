@@ -16,3 +16,4 @@ _Writer 에이전트만 읽고 쓰는 개인 노트. 학습·교훈·자주 쓰�
 - [2026-05-19] Funnel Blueprint의 1단계(Attention)에 맞춰, 'Contrarian Warning' 콘셉트와 Pain $\rightarrow$ Solution 흐름을 극대화한 가장 자극적인 후킹 메시지 카피라이팅 초안을 작성하고 A/B 테스트용 변형 3가지를 제시하라. → 산출물 sessions/2026-05-19T10-01/writer.md
 - [2026-05-19] 구현될 전환 컴포넌트의 배치와 기능이 가장 높은 CTR을 유도할 수 있도록, 최적화된 CTA 카피라이팅 및 Pain-Solution 흐름에 따른 스크립트 연동 포인트를 최종 검토하고 개발팀에 전달하라. → 산출물 sessions/2026-05-19T10-16/writer.md
 - [2026-05-19] 코다리의 코드 구현 진척 상황을 모니터링하며, 구현된 랜딩 페이지 컴포넌트에 맞춰 Pain-Solution Funnel 단계별(Awareness/Consideration) CTA 라이브러리와 스크립트 연동 매뉴얼을 즉시 업데이트하라. → 산출물 sessions/2026-05-19T10-31/writer.md
+- [2026-05-19] 이전 Funnel Blueprint를 기반으로, 다음 4개 영상에 적용할 핵심 후킹 메시지(Pain Trigger/Solution)와 스크립트 초안의 우선순위를 확정하고 각 영상별 카피라이팅을 작성하라. → 산출물 sessions/2026-05-19T10-46/writer.md
