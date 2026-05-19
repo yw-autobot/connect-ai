@@ -1,0 +1,15 @@
+{
+  "title": "리드 캡처(Lead) 데이터 스키마",
+  "description": "Starter Kit 다운로드 등 무료 리소스를 받기 위해 수집하는 고객 정보의 구조입니다.",
+  "properties": {
+    "email": { "type": "string", "format": "email", "description": "필수: 이메일 주소 (중복 검사 필수)" },
+    "name": { "type": "string", "description": "선택적: 이름" },
+    "painPointArea": { 
+        "type": "array", 
+        "items": { "type": "string", "enum": ["자동화", "구조화", "수익 모델 설계", "콘텐츠 기획"] },
+        "description": "고객이 가장 해결하고 싶어하는 문제 영역 (CRM 활용 목적)" 
+    },
+    "source": { "type": "string", "description": "트래픽 유입 경로 (예: 'YouTube Video A', 'Paid Ad B')" }
+  },
+  "required": ["email"]
+}
