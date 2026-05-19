@@ -22,3 +22,4 @@ _Designer 에이전트만 읽고 쓰는 개인 노트. 학습·교훈·자주 �
 - [2026-05-19] Writer가 제시한 최종 후킹 메시지와 Meta Funnel Style Guide V2.0를 완벽하게 연동하여, 다음 영상에 사용될 메인 썸네일 디자인 시안 3가지를 즉시 생성하고, 가장 높은 CTR을 유도할 수 있는 시각적 컨셉을 확정하라. → 산출물 sessions/2026-05-19T08-01/designer.md
 - [2026-05-19] 개발팀 핸드오버를 위해 모든 디자인 컴포넌트(버튼, 섹션 등)의 최종 상태값과 사용법을 정의하는 Design System 스펙을 확정하고, 개발자가 즉시 적용할 수 있도록 명확한 스타일링 마스터 템플릿을 제공하라. → 산출물 sessions/2026-05-19T08-16/designer.md
 - [2026-05-19] 확정된 DesignSystem_Master_Template_V3.0.md를 기반으로 랜딩 페이지에 필요한 핵심 UI/UX 요소(Pricing, CTA 섹션 등)의 최종 디자인 시안을 즉시 생성하여 개발팀에게 전달할 수 있도록 준비하라. → 산출물 sessions/2026-05-19T08-31/designer.md
+- [2026-05-19] 코다리가 구현한 코드 컴포넌트(`PricingSection` 등 핵심 전환 요소)에 대해 최종 디자인 시스템 일관성 검증(Design System Consistency Check)을 수행하여 개발팀에 전달할 최종 사양을 확정하라. → 산출물 sessions/2026-05-19T08-46/designer.md
