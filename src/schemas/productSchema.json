@@ -1,0 +1,27 @@
+{
+  "title": "제품 및 서비스 데이터 스키마",
+  "description": "Core Pack, Starter Kit 등 판매되는 모든 상품의 메타데이터 구조를 정의합니다.",
+  "properties": {
+    "productId": { "type": "string", "description": "상품 고유 식별자 (SKU 또는 ID)" },
+    "productName": { "type": "string", "description": "고객에게 보여지는 상품명 (예: AI 자동화 워크플로우 시스템 패키지)" },
+    "priceData": {
+      "type": "object",
+      "properties": {
+        "basePriceKRW": { "type": "number", "description": "기본 가격 (Core Pack 기준)" },
+        "discountedPriceKRW": { "type": "number", "description": "할인/번들링 적용 가격 (Starter Bundle 등)" }
+      },
+      "required": ["basePriceKRW"]
+    },
+    "isDigitalProduct": { "type": "boolean", "description": "물리적 제품 여부 (항상 true여야 함)" },
+    "descriptionSections": { 
+        "type": "array", 
+        "items": { "type": "object", "properties": {"heading": {"type": "string"}, "content": {"type": "string"}, "icon": {"type": "string"}} }
+    },
+    "requiredComponents": { 
+        "type": "array", 
+        "items": { "type": "string", "description": "이 패키지 구매 시 포함되는 핵심 요소 (예: '경쟁사 분석 체크리스트', 'Notion 템플릿')"}
+    },
+    "ctaText": { "type": "string", "description": "최종 행동 유도 문구 (Buy Now, Download Free)" }
+  },
+  "required": ["productId", "productName", "priceData"]
+}
