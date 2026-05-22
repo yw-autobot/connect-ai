@@ -34,11 +34,13 @@
       "description": "시스템 개선 됐으면 다시 채널 분석해줘",
       "owner": "user",
       "createdAt": "2026-05-19T02:31:06.328Z",
-      "status": "pending",
+      "status": "cancelled",
       "nudges": 2,
       "priority": "normal",
       "preAlarmsSent": [],
-      "_lastNudgeAt": "2026-05-22T00:45:59.310Z"
+      "_lastNudgeAt": "2026-05-22T00:45:59.310Z",
+      "evidence": "대시보드에서 사용자 취소",
+      "completedAt": "2026-05-22T05:25:53.401Z"
     },
     {
       "id": "20260519024934-1wqv",

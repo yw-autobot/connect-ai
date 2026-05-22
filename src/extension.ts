@@ -2057,21 +2057,25 @@ function readToolAutonomyLevel(agentId: string): number {
     return 2; // Draft is the safe default — agent prepares, user approves.
 }
 
-async function _quickLLMCall(systemPrompt: string, userMsg: string, maxTokens = 64): Promise<string> {
+async function _quickLLMCall(systemPrompt: string, userMsg: string, maxTokens = 64, modelOverride = ''): Promise<string> {
     const { ollamaBase, defaultModel, timeout } = getConfig();
     const isLMStudio = _isLMStudioEngine(ollamaBase);
     const apiUrl = isLMStudio ? `${ollamaBase}/v1/chat/completions` : `${ollamaBase}/api/chat`;
+    const model = (modelOverride || defaultModel).trim();
     const messages = [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMsg }
     ];
-    const tmo = Math.min(timeout || 60000, 60000);
+    /* Fast helper calls used to be hard-capped at 60s. On local reasoning
+       models that can cut off Secretary JSON responses, so respect the user
+       timeout while keeping a sane 10-minute ceiling for small helper calls. */
+    const tmo = Math.min(timeout || 60000, 600000);
     if (isLMStudio) {
-        const body = { model: defaultModel, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
+        const body = { model, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
         const r = await axios.post(apiUrl, body, { timeout: tmo });
         return r.data?.choices?.[0]?.message?.content?.toString().trim() || '';
     }
-    const body = { model: defaultModel, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
+    const body = { model, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
     const r = await axios.post(apiUrl, body, { timeout: tmo });
     return r.data?.message?.content?.toString().trim() || '';
 }
@@ -2550,7 +2554,8 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
         /* 800 (was 500) — calendar_create with description + location can blow
            past 500 and arrive truncated. Truncated JSON has no balanced close
            brace, defeats the parser, and leaks raw `{"mode":...` to the user. */
-        raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userText, 800);
+        const secretaryModel = getAgentModel('secretary', getConfig().defaultModel || '');
+        raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userText, 2048, secretaryModel);
     } catch (e: any) {
         await sendTelegramReport(`⚠️ 비서가 응답하지 못했어요: ${e?.message || e}`);
         return;
@@ -2574,7 +2579,7 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
             .replace(/\{[\s\S]*$/, '')         // open brace → EOF (catches truncation)
             .trim();
         if (!clean) {
-            await sendTelegramReport(`💬 비서: 잠깐, 모델이 답변을 끝내지 못했어요. 다시 한 번 말씀해주실 수 있나요?`);
+            await sendTelegramReport(`💬 비서: 모델 응답이 비었거나 JSON이 중간에 잘렸어요. 보통 긴 reasoning/토큰 부족/일시 타임아웃 때문이에요. 방금 설정을 늘려두었으니 같은 요청을 한 번만 다시 보내주세요.`);
             return;
         }
         const fallbackMsg = clean.slice(0, 600);
@@ -18928,7 +18933,7 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                     model: modelName || defaultModel,
                     messages: reqMessages,
                     stream: true,
-                    max_tokens: 4096, temperature: this._temperature, top_p: this._topP
+                    max_tokens: 8192, temperature: this._temperature, top_p: this._topP
                 };
                 const response = await axios.post(apiUrl, streamBody, { timeout, responseType: 'stream' });
                 await new Promise<void>((resolve, reject) => {
@@ -18963,7 +18968,7 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                     model: modelName || defaultModel,
                     messages: reqMessages,
                     stream: true,
-                    options: { num_ctx: 8192, num_predict: 2048, temperature: this._temperature, top_p: this._topP, top_k: this._topK }
+                    options: { num_ctx: 32768, num_predict: 4096, temperature: this._temperature, top_p: this._topP, top_k: this._topK }
                 };
                 // Attach images to the last user message for Ollama
                 if (images.length > 0) {
@@ -19125,8 +19130,8 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                 messages: reqMessages,
                 stream: true,
                 ...(isLMStudio
-                    ? { max_tokens: 4096, temperature: this._temperature, top_p: this._topP }
-                    : { options: { num_ctx: 8192, num_predict: 2048, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }),
+                    ? { max_tokens: 8192, temperature: this._temperature, top_p: this._topP }
+                    : { options: { num_ctx: 32768, num_predict: 4096, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }),
             };
 
             // 🎬 Thinking Mode: notify graph panel that a session is starting
@@ -19275,8 +19280,8 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                     messages: reqMessages,
                     stream: true, // 스트리밍 활성화
                     ...(isLMStudio 
-                        ? { max_tokens: 4096, temperature: this._temperature, top_p: this._topP } 
-                        : { options: { num_ctx: 8192, num_predict: 2048, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }),
+                        ? { max_tokens: 8192, temperature: this._temperature, top_p: this._topP } 
+                        : { options: { num_ctx: 32768, num_predict: 4096, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }),
                 }, { timeout, responseType: 'stream', signal: this._abortController?.signal });
 
                 aiMessage = cleanedResponse + uiFeedbackStr;

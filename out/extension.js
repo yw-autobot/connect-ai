@@ -16766,21 +16766,22 @@ function readToolAutonomyLevel(agentId) {
   }
   return 2;
 }
-async function _quickLLMCall(systemPrompt, userMsg, maxTokens = 64) {
+async function _quickLLMCall(systemPrompt, userMsg, maxTokens = 64, modelOverride = "") {
   const { ollamaBase, defaultModel, timeout } = getConfig();
   const isLMStudio = _isLMStudioEngine(ollamaBase);
   const apiUrl = isLMStudio ? `${ollamaBase}/v1/chat/completions` : `${ollamaBase}/api/chat`;
+  const model = (modelOverride || defaultModel).trim();
   const messages = [
     { role: "system", content: systemPrompt },
     { role: "user", content: userMsg }
   ];
-  const tmo = Math.min(timeout || 6e4, 6e4);
+  const tmo = Math.min(timeout || 6e4, 6e5);
   if (isLMStudio) {
-    const body2 = { model: defaultModel, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
+    const body2 = { model, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
     const r2 = await axios_default.post(apiUrl, body2, { timeout: tmo });
     return r2.data?.choices?.[0]?.message?.content?.toString().trim() || "";
   }
-  const body = { model: defaultModel, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
+  const body = { model, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
   const r = await axios_default.post(apiUrl, body, { timeout: tmo });
   return r.data?.message?.content?.toString().trim() || "";
 }
@@ -17258,7 +17259,8 @@ _\uC0AC\uC6A9\uC790\uAC00 "\uADF8\uAC70"\xB7"\uBC29\uAE08 \uADF8 \uC77C\uC815"\x
   }
   let raw = "";
   try {
-    raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userText, 800);
+    const secretaryModel = getAgentModel("secretary", getConfig().defaultModel || "");
+    raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userText, 2048, secretaryModel);
   } catch (e) {
     await sendTelegramReport(`\u26A0\uFE0F \uBE44\uC11C\uAC00 \uC751\uB2F5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694: ${e?.message || e}`);
     return;
@@ -17277,7 +17279,7 @@ _\uC0AC\uC6A9\uC790\uAC00 "\uADF8\uAC70"\xB7"\uBC29\uAE08 \uADF8 \uC77C\uC815"\x
     }
     const clean = raw.replace(/```[\s\S]*?```/g, "").replace(/\{[\s\S]*$/, "").trim();
     if (!clean) {
-      await sendTelegramReport(`\u{1F4AC} \uBE44\uC11C: \uC7A0\uAE50, \uBAA8\uB378\uC774 \uB2F5\uBCC0\uC744 \uB05D\uB0B4\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uD55C \uBC88 \uB9D0\uC500\uD574\uC8FC\uC2E4 \uC218 \uC788\uB098\uC694?`);
+      await sendTelegramReport(`\u{1F4AC} \uBE44\uC11C: \uBAA8\uB378 \uC751\uB2F5\uC774 \uBE44\uC5C8\uAC70\uB098 JSON\uC774 \uC911\uAC04\uC5D0 \uC798\uB838\uC5B4\uC694. \uBCF4\uD1B5 \uAE34 reasoning/\uD1A0\uD070 \uBD80\uC871/\uC77C\uC2DC \uD0C0\uC784\uC544\uC6C3 \uB54C\uBB38\uC774\uC5D0\uC694. \uBC29\uAE08 \uC124\uC815\uC744 \uB298\uB824\uB450\uC5C8\uC73C\uB2C8 \uAC19\uC740 \uC694\uCCAD\uC744 \uD55C \uBC88\uB9CC \uB2E4\uC2DC \uBCF4\uB0B4\uC8FC\uC138\uC694.`);
       return;
     }
     const fallbackMsg = clean.slice(0, 600);
@@ -32790,7 +32792,7 @@ ${brainCtx}${internetCtx}`
           model: modelName || defaultModel,
           messages: reqMessages,
           stream: true,
-          max_tokens: 4096,
+          max_tokens: 8192,
           temperature: this._temperature,
           top_p: this._topP
         };
@@ -32830,7 +32832,7 @@ ${brainCtx}${internetCtx}`
           model: modelName || defaultModel,
           messages: reqMessages,
           stream: true,
-          options: { num_ctx: 8192, num_predict: 2048, temperature: this._temperature, top_p: this._topP, top_k: this._topK }
+          options: { num_ctx: 32768, num_predict: 4096, temperature: this._temperature, top_p: this._topP, top_k: this._topK }
         };
         if (images.length > 0) {
           streamBody.messages = reqMessages.map(
@@ -33007,7 +33009,7 @@ ${brainCtx}${internetCtx}`
         model: modelName || defaultModel,
         messages: reqMessages,
         stream: true,
-        ...isLMStudio ? { max_tokens: 4096, temperature: this._temperature, top_p: this._topP } : { options: { num_ctx: 8192, num_predict: 2048, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }
+        ...isLMStudio ? { max_tokens: 8192, temperature: this._temperature, top_p: this._topP } : { options: { num_ctx: 32768, num_predict: 4096, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }
       };
       if (this._shouldEmitThinking()) {
         this._postThinking({ type: "thinking_start", prompt });
@@ -33155,7 +33157,7 @@ Now answer the user's question using the above knowledge. Do NOT output <read_br
           messages: reqMessages,
           stream: true,
           // 스트리밍 활성화
-          ...isLMStudio ? { max_tokens: 4096, temperature: this._temperature, top_p: this._topP } : { options: { num_ctx: 8192, num_predict: 2048, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }
+          ...isLMStudio ? { max_tokens: 8192, temperature: this._temperature, top_p: this._topP } : { options: { num_ctx: 32768, num_predict: 4096, temperature: this._temperature, top_p: this._topP, top_k: this._topK } }
         }, { timeout, responseType: "stream", signal: this._abortController?.signal });
         aiMessage = cleanedResponse + uiFeedbackStr;
         if (this._shouldEmitThinking()) {

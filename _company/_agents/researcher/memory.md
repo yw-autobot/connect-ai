@@ -18,3 +18,4 @@ _Researcher 에이전트만 읽고 쓰는 개인 노트. 학습·교훈·자주 
 - [2026-05-19] YouTube Analytics 데이터를 기반으로 가장 높은 ROI를 보인 콘텐츠 유형, 시청자들이 반응한 후킹 요소(Hooking Elements), 그리고 이를 바탕으로 다음 3~5개 영상에 적용할 구체적이고 실행 가능한 기획안 및 수익화 전략을 도출하라. → 산출물 sessions/2026-05-19T09-01/researcher.md
 - [2026-05-19] 가장 높은 ROI를 보인 콘텐츠 유형 및 후킹 요소 데이터(`03_DataDriven_Content_Formula_Plan.md`)를 기반으로, 다음 영상 제작에 적용할 구체적인 Pain $ightarrow$ Solution 흐름의 최신 트렌드 데이터를 분석하고 요약하라. → 산출물 sessions/2026-05-19T09-31/researcher.md
 - [2026-05-22] 최근 시장 트렌드 및 경쟁사 분석 데이터를 기반으로, 현재 콘텐츠 전략(후킹 요소)와 가장 높은 ROI를 보일 것으로 예상되는 다음 3개 영상 주제에 대한 구체적인 Pain-Triggered Conversion Rulebook을 작성해줘. → 산출물 sessions/2026-05-22T04-38/researcher.md
+- [2026-05-22] 이전에 분석했던 쇼핑몰 URL(https://shopping.tubefactory.kr/) 및 유튜브 채널 데이터를 기반으로, 현재 시장에서 가장 높은 수익화 잠재력을 가진 'Pain Point' 5가지를 최신 데이터로 재분석하고, 각 Pain Point에 대한 경쟁사 반응을 심층적으로 조사하여 보고하라. → 산출물 sessions/2026-05-22T05-20/researcher.md
