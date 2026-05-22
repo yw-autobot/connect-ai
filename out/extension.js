@@ -15492,6 +15492,15 @@ function _pythonCmd() {
   _pythonCmdCache = _detectPythonCmd();
   return _pythonCmdCache;
 }
+function _utf8ProcessEnv(extra = {}) {
+  return {
+    ...process.env,
+    PYTHONIOENCODING: "utf-8",
+    PYTHONUTF8: "1",
+    PYTHONLEGACYWINDOWSSTDIO: "0",
+    ...extra
+  };
+}
 function _invalidatePythonCmdCache() {
   _pythonCmdCache = null;
 }
@@ -15519,7 +15528,7 @@ function runCommandCaptured(cmd, cwd, onChunk, timeoutMs = 6e4, captureStream = 
     const child = (0, import_child_process.spawn)(cmd, {
       cwd,
       shell: true,
-      env: process.env,
+      env: _utf8ProcessEnv(),
       stdio: ["ignore", "pipe", "pipe"]
     });
     let buf = "";
@@ -18581,7 +18590,7 @@ ${tail.slice(0, 700)}
       const ppScript = path2.join(ppToolDir, "paypal_revenue.py");
       const ppJson = path2.join(ppToolDir, "paypal_revenue.json");
       if (fs.existsSync(ppScript) && fs.existsSync(ppJson)) {
-        const env2 = { ...process.env, LOOKBACK_DAYS: "1" };
+        const env2 = _utf8ProcessEnv({ LOOKBACK_DAYS: "1" });
         const r = await new Promise((resolve2) => {
           const cp = require("child_process");
           const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env: env2 });
@@ -18661,7 +18670,7 @@ async function _runRevenueWatcherOnce() {
     if (!fs.existsSync(ppScript) || !fs.existsSync(ppJson)) return;
     const cfg = JSON.parse(_safeReadText(ppJson) || "{}");
     if (!cfg.CLIENT_ID || !cfg.CLIENT_SECRET) return;
-    const env2 = { ...process.env, OUTPUT: "json", LOOKBACK_DAYS: "2" };
+    const env2 = _utf8ProcessEnv({ OUTPUT: "json", LOOKBACK_DAYS: "2" });
     const r = await new Promise((resolve2) => {
       const cp = require("child_process");
       const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env: env2 });
@@ -22377,15 +22386,20 @@ function activate(context) {
     const server = http3.createServer((req, res) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+      res.setHeader("Access-Control-Allow-Private-Network", "true");
+      res.setHeader(
+        "Vary",
+        "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+      );
       if (req.method === "OPTIONS") {
-        res.writeHead(200);
+        res.writeHead(204);
         res.end();
         return;
       }
       if (req.method === "GET" && req.url === "/ping") {
         const brainDir = _getBrainDir();
-        const brainCount = fs.existsSync(brainDir) ? provider._findBrainFiles(brainDir).length : 0;
+        const brainReady = fs.existsSync(brainDir);
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
           status: "ok",
@@ -22394,7 +22408,7 @@ function activate(context) {
           version: _CONNECT_AI_VERSION,
           pid: process.pid,
           config: getConfig(),
-          brain: { fileCount: brainCount, enabled: provider._brainEnabled }
+          brain: { ready: brainReady, enabled: provider._brainEnabled }
         }));
       } else if (req.method === "POST" && req.url === "/api/exam") {
         (async () => {
@@ -24922,7 +24936,7 @@ var CompanyDashboardPanel = class _CompanyDashboardPanel {
               this._panel.webview.postMessage({ type: "revenueMini", data: null });
               return;
             }
-            const env2 = { ...process.env, OUTPUT: "json", LOOKBACK_DAYS: "30" };
+            const env2 = _utf8ProcessEnv({ OUTPUT: "json", LOOKBACK_DAYS: "30" });
             const r = await new Promise((resolve2) => {
               const cp = require("child_process");
               const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env: env2 });
@@ -26411,7 +26425,7 @@ var RevenueDashboardPanel = class _RevenueDashboardPanel {
         this._postError("PayPal Client ID \uB610\uB294 Secret \uBBF8\uC124\uC815. \uC678\uBD80 \uC5F0\uACB0 \uD328\uB110\uC5D0\uC11C \uC785\uB825 \uD544\uC694.");
         return;
       }
-      const env2 = { ...process.env, OUTPUT: "json", LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) };
+      const env2 = _utf8ProcessEnv({ OUTPUT: "json", LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) });
       const r = await new Promise((resolve2) => {
         const cp = require("child_process");
         const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env: env2 });
@@ -26913,7 +26927,7 @@ var OfficePanel = class _OfficePanel {
               panel.webview.postMessage({ type: "revenueMini", data: null });
               break;
             }
-            const env2 = { ...process.env, OUTPUT: "json", LOOKBACK_DAYS: "30" };
+            const env2 = _utf8ProcessEnv({ OUTPUT: "json", LOOKBACK_DAYS: "30" });
             const r = await new Promise((resolve2) => {
               const cp = require("child_process");
               const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env: env2 });
@@ -32626,13 +32640,29 @@ ${conflicted}
   // 재귀 탐색 유틸리티 (하위 폴더까지 .md/.txt 파일 긁어옴)
   _findBrainFiles(dir) {
     let results = [];
+    const excludedDirs = /* @__PURE__ */ new Set([
+      ".git",
+      ".obsidian",
+      "node_modules",
+      "assets",
+      "vendor",
+      "dist",
+      "build",
+      "out",
+      ".next",
+      ".cache"
+    ]);
+    const MAX_BRAIN_FILES = 5e3;
     try {
       const list = fs.readdirSync(dir);
       for (const file of list) {
+        if (results.length >= MAX_BRAIN_FILES) {
+          break;
+        }
         const filePath = path2.join(dir, file);
         const stat = fs.statSync(filePath);
         if (stat && stat.isDirectory()) {
-          if (file !== ".git" && file !== "node_modules" && file !== ".obsidian") {
+          if (!excludedDirs.has(file) && !file.startsWith(".")) {
             results = results.concat(this._findBrainFiles(filePath));
           }
         } else {
@@ -35148,7 +35178,7 @@ _\u{1F4C1} \uC800\uC7A5: ${sessionDisplay}_`,
 `;
     }
     try {
-      const env2 = { ...process.env, LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) };
+      const env2 = _utf8ProcessEnv({ LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) });
       const r = await new Promise((resolve2) => {
         const cp = require("child_process");
         const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env: env2 });

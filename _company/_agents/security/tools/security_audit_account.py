@@ -1,3 +1,10 @@
+import sys as _connect_ai_sys
+for _connect_ai_stream in (_connect_ai_sys.stdout, _connect_ai_sys.stderr):
+    try:
+        _connect_ai_stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import json
 from pathlib import Path
 

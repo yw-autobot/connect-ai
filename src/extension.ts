@@ -563,6 +563,16 @@ function _pythonCmd(): string {
     return _pythonCmdCache;
 }
 
+function _utf8ProcessEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
+    return {
+        ...process.env,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1',
+        PYTHONLEGACYWINDOWSSTDIO: '0',
+        ...extra
+    };
+}
+
 /* 사용자가 설정 변경하면 캐시 무효화 — 다음 호출 시 재감지. */
 function _invalidatePythonCmdCache() {
     _pythonCmdCache = null;
@@ -610,7 +620,7 @@ function runCommandCaptured(
         const child = spawn(cmd, {
             cwd,
             shell: true,
-            env: process.env,
+            env: _utf8ProcessEnv(),
             stdio: ['ignore', 'pipe', 'pipe']
         });
         let buf = '';
@@ -3866,7 +3876,7 @@ async function _runDailyBriefingOnce(force = false): Promise<void> {
             const ppScript = path.join(ppToolDir, 'paypal_revenue.py');
             const ppJson = path.join(ppToolDir, 'paypal_revenue.json');
             if (fs.existsSync(ppScript) && fs.existsSync(ppJson)) {
-                const env = { ...process.env, LOOKBACK_DAYS: '1' };
+                const env = _utf8ProcessEnv({ LOOKBACK_DAYS: '1' });
                 const r = await new Promise<{ exitCode: number; output: string }>((resolve) => {
                     const cp = require('child_process');
                     const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env });
@@ -3942,7 +3952,7 @@ async function _runRevenueWatcherOnce(): Promise<void> {
         const cfg = JSON.parse(_safeReadText(ppJson) || '{}');
         if (!cfg.CLIENT_ID || !cfg.CLIENT_SECRET) return; /* 미설정 — silent */
 
-        const env = { ...process.env, OUTPUT: 'json', LOOKBACK_DAYS: '2' };
+        const env = _utf8ProcessEnv({ OUTPUT: 'json', LOOKBACK_DAYS: '2' });
         const r = await new Promise<{ exitCode: number; output: string }>((resolve) => {
             const cp = require('child_process');
             const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env });
@@ -8286,17 +8296,22 @@ export function activate(context: vscode.ExtensionContext) {
         const server = http.createServer((req, res) => {
             res.setHeader('Access-Control-Allow-Origin', '*'); 
             res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            res.setHeader('Access-Control-Allow-Private-Network', 'true');
+            res.setHeader(
+                'Vary',
+                'Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network'
+            );
 
             if (req.method === 'OPTIONS') {
-                res.writeHead(200);
+                res.writeHead(204);
                 res.end();
                 return;
             }
 
             if (req.method === 'GET' && req.url === '/ping') {
                 const brainDir = _getBrainDir();
-                const brainCount = fs.existsSync(brainDir) ? provider._findBrainFiles(brainDir).length : 0;
+                const brainReady = fs.existsSync(brainDir);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 /* v2.89.127 — 신원·버전 정보 추가. 다른 Connect AI 인스턴스가 충돌 시
                    이 응답 보고 "우리 거다 → 조용히 공유 모드 / 옛 버전이면 자동 인계" 판단. */
@@ -8307,7 +8322,7 @@ export function activate(context: vscode.ExtensionContext) {
                     version: _CONNECT_AI_VERSION,
                     pid: process.pid,
                     config: getConfig(),
-                    brain: { fileCount: brainCount, enabled: provider._brainEnabled }
+                    brain: { ready: brainReady, enabled: provider._brainEnabled }
                 }));
             }
             else if (req.method === 'POST' && req.url === '/api/exam') {
@@ -11005,7 +11020,7 @@ class CompanyDashboardPanel {
                             this._panel.webview.postMessage({ type: 'revenueMini', data: null });
                             return;
                         }
-                        const env = { ...process.env, OUTPUT: 'json', LOOKBACK_DAYS: '30' };
+                        const env = _utf8ProcessEnv({ OUTPUT: 'json', LOOKBACK_DAYS: '30' });
                         const r = await new Promise<{ exitCode: number; output: string }>((resolve) => {
                             const cp = require('child_process');
                             const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env });
@@ -12579,7 +12594,7 @@ class RevenueDashboardPanel {
                 this._postError('PayPal Client ID 또는 Secret 미설정. 외부 연결 패널에서 입력 필요.');
                 return;
             }
-            const env = { ...process.env, OUTPUT: 'json', LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) };
+            const env = _utf8ProcessEnv({ OUTPUT: 'json', LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) });
             const r = await new Promise<{ exitCode: number; output: string; stderr: string }>((resolve) => {
                 const cp = require('child_process');
                 const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env });
@@ -13035,7 +13050,7 @@ class OfficePanel {
                             panel.webview.postMessage({ type: 'revenueMini', data: null });
                             break;
                         }
-                        const env = { ...process.env, OUTPUT: 'json', LOOKBACK_DAYS: '30' };
+                        const env = _utf8ProcessEnv({ OUTPUT: 'json', LOOKBACK_DAYS: '30' });
                         const r = await new Promise<{ exitCode: number; output: string }>((resolve) => {
                             const cp = require('child_process');
                             const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env });
@@ -18810,13 +18825,19 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
     // 재귀 탐색 유틸리티 (하위 폴더까지 .md/.txt 파일 긁어옴)
     public _findBrainFiles(dir: string): string[] {
         let results: string[] = [];
+        const excludedDirs = new Set([
+            '.git', '.obsidian', 'node_modules', 'assets', 'vendor',
+            'dist', 'build', 'out', '.next', '.cache'
+        ]);
+        const MAX_BRAIN_FILES = 5000;
         try {
             const list = fs.readdirSync(dir);
             for (const file of list) {
+                if (results.length >= MAX_BRAIN_FILES) { break; }
                 const filePath = path.join(dir, file);
                 const stat = fs.statSync(filePath);
                 if (stat && stat.isDirectory()) {
-                    if (file !== '.git' && file !== 'node_modules' && file !== '.obsidian') {
+                    if (!excludedDirs.has(file) && !file.startsWith('.')) {
                         results = results.concat(this._findBrainFiles(filePath));
                     }
                 } else {
@@ -21380,7 +21401,7 @@ ${catalog.map((c, i) => `${i + 1}. agent=${c.agentId} tool=${c.tool} — ${c.des
 `;
         }
         try {
-            const env = { ...process.env, LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) };
+            const env = _utf8ProcessEnv({ LOOKBACK_DAYS: String(cfg.LOOKBACK_DAYS || 30) });
             const r = await new Promise<{ exitCode: number; output: string; stderr: string }>((resolve) => {
                 const cp = require('child_process');
                 const p = cp.spawn(_pythonCmd(), [ppScript], { cwd: ppToolDir, env });

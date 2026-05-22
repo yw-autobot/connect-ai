@@ -1,0 +1,62 @@
+{
+  "_migrated": true,
+  "_migrated_v2": true,
+  "secretary": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "youtube": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "writer": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "designer": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "instagram": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "business": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "developer": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "researcher": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "security": {
+    "activatedAt": "2026-05-22T12:55:22.752Z",
+    "seeded": true
+  },
+  "devops": {
+    "activatedAt": "2026-05-22T12:55:22.756Z",
+    "seeded_v3": true
+  },
+  "data": {
+    "activatedAt": "2026-05-22T12:55:22.756Z",
+    "seeded_v3": true
+  },
+  "product": {
+    "activatedAt": "2026-05-22T12:55:22.756Z",
+    "seeded_v3": true
+  },
+  "automation": {
+    "activatedAt": "2026-05-22T12:55:22.756Z",
+    "seeded_v3": true
+  },
+  "mobile": {
+    "activatedAt": "2026-05-22T12:55:22.756Z",
+    "seeded_v3": true
+  },
+  "_migrated_v3": true,
+  "_migrated_v4": true
+}
