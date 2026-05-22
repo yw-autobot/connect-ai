@@ -17,3 +17,5 @@ _company/_agents/secretary/telegram_history.jsonl
 .env
 .env.local
 _company/_shared/vendor/antigravity-awesome-skills/
+_company/_shared/vendor/obra-superpowers/
+_company/_shared/vendor/compound-engineering-plugin/

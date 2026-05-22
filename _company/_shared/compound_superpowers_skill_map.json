@@ -1,0 +1,226 @@
+﻿{
+    "installed_at":  "2026-05-22T20:16:25",
+    "sources":  [
+                    {
+                        "name":  "obra-superpowers",
+                        "repo":  "https://github.com/obra/superpowers.git",
+                        "path":  "_company/_shared/vendor/obra-superpowers",
+                        "skills":  [
+                                       "brainstorming",
+                                       "dispatching-parallel-agents",
+                                       "executing-plans",
+                                       "finishing-a-development-branch",
+                                       "receiving-code-review",
+                                       "requesting-code-review",
+                                       "subagent-driven-development",
+                                       "systematic-debugging",
+                                       "test-driven-development",
+                                       "using-git-worktrees",
+                                       "using-superpowers",
+                                       "verification-before-completion",
+                                       "writing-plans",
+                                       "writing-skills"
+                                   ]
+                    },
+                    {
+                        "name":  "compound-engineering-plugin",
+                        "repo":  "https://github.com/EveryInc/compound-engineering-plugin.git",
+                        "path":  "_company/_shared/vendor/compound-engineering-plugin",
+                        "skills":  [
+                                       "ce-agent-native-architecture",
+                                       "ce-agent-native-audit",
+                                       "ce-brainstorm",
+                                       "ce-clean-gone-branches",
+                                       "ce-code-review",
+                                       "ce-commit",
+                                       "ce-commit-push-pr",
+                                       "ce-compound",
+                                       "ce-compound-refresh",
+                                       "ce-debug",
+                                       "ce-demo-reel",
+                                       "ce-dhh-rails-style",
+                                       "ce-doc-review",
+                                       "ce-dogfood-beta",
+                                       "ce-frontend-design",
+                                       "ce-gemini-imagegen",
+                                       "ce-ideate",
+                                       "ce-optimize",
+                                       "ce-plan",
+                                       "ce-polish-beta",
+                                       "ce-product-pulse",
+                                       "ce-proof",
+                                       "ce-release-notes",
+                                       "ce-report-bug",
+                                       "ce-resolve-pr-feedback",
+                                       "ce-riffrec-feedback-analysis",
+                                       "ce-sessions",
+                                       "ce-setup",
+                                       "ce-simplify-code",
+                                       "ce-slack-research",
+                                       "ce-strategy",
+                                       "ce-test-browser",
+                                       "ce-test-xcode",
+                                       "ce-update",
+                                       "ce-work",
+                                       "ce-work-beta",
+                                       "ce-worktree",
+                                       "lfg"
+                                   ]
+                    }
+                ],
+    "agent_assignments":  {
+                              "ceo":  [
+                                          "using-superpowers",
+                                          "brainstorming",
+                                          "writing-plans",
+                                          "dispatching-parallel-agents",
+                                          "requesting-code-review",
+                                          "receiving-code-review",
+                                          "verification-before-completion",
+                                          "ce-strategy",
+                                          "ce-ideate",
+                                          "ce-brainstorm",
+                                          "ce-plan",
+                                          "ce-compound",
+                                          "ce-compound-refresh"
+                                      ],
+                              "developer":  [
+                                                "using-superpowers",
+                                                "using-git-worktrees",
+                                                "writing-plans",
+                                                "subagent-driven-development",
+                                                "executing-plans",
+                                                "test-driven-development",
+                                                "systematic-debugging",
+                                                "requesting-code-review",
+                                                "receiving-code-review",
+                                                "verification-before-completion",
+                                                "finishing-a-development-branch",
+                                                "ce-work",
+                                                "ce-debug",
+                                                "ce-proof",
+                                                "ce-code-review",
+                                                "ce-simplify-code",
+                                                "ce-commit",
+                                                "ce-commit-push-pr",
+                                                "ce-compound"
+                                            ],
+                              "security":  [
+                                               "requesting-code-review",
+                                               "receiving-code-review",
+                                               "verification-before-completion",
+                                               "systematic-debugging",
+                                               "ce-code-review",
+                                               "ce-doc-review",
+                                               "ce-proof",
+                                               "ce-agent-native-audit",
+                                               "ce-compound"
+                                           ],
+                              "devops":  [
+                                             "using-git-worktrees",
+                                             "verification-before-completion",
+                                             "finishing-a-development-branch",
+                                             "systematic-debugging",
+                                             "ce-worktree",
+                                             "ce-test-browser",
+                                             "ce-proof",
+                                             "ce-commit-push-pr",
+                                             "ce-release-notes",
+                                             "ce-compound"
+                                         ],
+                              "product":  [
+                                              "brainstorming",
+                                              "writing-plans",
+                                              "using-superpowers",
+                                              "ce-strategy",
+                                              "ce-ideate",
+                                              "ce-brainstorm",
+                                              "ce-plan",
+                                              "ce-product-pulse",
+                                              "ce-compound"
+                                          ],
+                              "automation":  [
+                                                 "using-superpowers",
+                                                 "writing-skills",
+                                                 "executing-plans",
+                                                 "verification-before-completion",
+                                                 "ce-work-beta",
+                                                 "ce-agent-native-architecture",
+                                                 "ce-agent-native-audit",
+                                                 "ce-compound",
+                                                 "ce-compound-refresh"
+                                             ],
+                              "researcher":  [
+                                                 "brainstorming",
+                                                 "using-superpowers",
+                                                 "ce-slack-research",
+                                                 "ce-riffrec-feedback-analysis",
+                                                 "ce-product-pulse",
+                                                 "ce-compound"
+                                             ],
+                              "writer":  [
+                                             "brainstorming",
+                                             "using-superpowers",
+                                             "ce-brainstorm",
+                                             "ce-release-notes",
+                                             "ce-compound"
+                                         ],
+                              "designer":  [
+                                               "brainstorming",
+                                               "using-superpowers",
+                                               "ce-frontend-design",
+                                               "ce-demo-reel",
+                                               "ce-polish-beta",
+                                               "ce-compound"
+                                           ],
+                              "mobile":  [
+                                             "using-superpowers",
+                                             "writing-plans",
+                                             "requesting-code-review",
+                                             "receiving-code-review",
+                                             "verification-before-completion",
+                                             "ce-test-xcode",
+                                             "ce-agent-native-audit",
+                                             "ce-compound"
+                                         ],
+                              "data":  [
+                                           "brainstorming",
+                                           "verification-before-completion",
+                                           "ce-product-pulse",
+                                           "ce-proof",
+                                           "ce-compound"
+                                       ],
+                              "business":  [
+                                               "ce-strategy",
+                                               "ce-product-pulse",
+                                               "ce-brainstorm",
+                                               "ce-compound"
+                                           ],
+                              "youtube":  [
+                                              "brainstorming",
+                                              "ce-ideate",
+                                              "ce-brainstorm",
+                                              "ce-demo-reel",
+                                              "ce-compound"
+                                          ],
+                              "instagram":  [
+                                                "brainstorming",
+                                                "ce-ideate",
+                                                "ce-frontend-design",
+                                                "ce-compound"
+                                            ],
+                              "editor":  [
+                                             "ce-demo-reel",
+                                             "ce-polish-beta",
+                                             "verification-before-completion",
+                                             "ce-compound"
+                                         ],
+                              "secretary":  [
+                                                "using-superpowers",
+                                                "requesting-code-review",
+                                                "receiving-code-review",
+                                                "ce-sessions",
+                                                "ce-compound"
+                                            ]
+                          }
+}

@@ -2070,14 +2070,66 @@ async function _quickLLMCall(systemPrompt: string, userMsg: string, maxTokens = 
        models that can cut off Secretary JSON responses, so respect the user
        timeout while keeping a sane 10-minute ceiling for small helper calls. */
     const tmo = Math.min(timeout || 60000, 600000);
-    if (isLMStudio) {
-        const body = { model, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
+    try {
+        if (isLMStudio) {
+            const body = { model, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
+            const r = await axios.post(apiUrl, body, { timeout: tmo });
+            return r.data?.choices?.[0]?.message?.content?.toString().trim() || '';
+        }
+        const body = { model, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
         const r = await axios.post(apiUrl, body, { timeout: tmo });
-        return r.data?.choices?.[0]?.message?.content?.toString().trim() || '';
+        return r.data?.message?.content?.toString().trim() || '';
+    } catch (e: any) {
+        const status = e?.response?.status;
+        const data = e?.response?.data;
+        const detail = typeof data === 'string'
+            ? data.slice(0, 500)
+            : data ? JSON.stringify(data).slice(0, 500) : '';
+        const suffix = detail ? `: ${detail}` : '';
+        throw new Error(status ? `LLM HTTP ${status}${suffix}` : (e?.message || String(e)));
     }
-    const body = { model, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
-    const r = await axios.post(apiUrl, body, { timeout: tmo });
-    return r.data?.message?.content?.toString().trim() || '';
+}
+
+function _splitTextSmart(text: string, maxChars = 5000): string[] {
+    const src = (text || '').trim();
+    if (!src) return [];
+    const chunks: string[] = [];
+    let remaining = src;
+    while (remaining.length > maxChars) {
+        let splitAt = remaining.lastIndexOf('\n\n', maxChars);
+        if (splitAt < maxChars * 0.55) splitAt = remaining.lastIndexOf('\n', maxChars);
+        if (splitAt < maxChars * 0.55) splitAt = remaining.lastIndexOf('. ', maxChars);
+        if (splitAt < maxChars * 0.35) splitAt = maxChars;
+        chunks.push(remaining.slice(0, splitAt).trim());
+        remaining = remaining.slice(splitAt).trim();
+    }
+    if (remaining) chunks.push(remaining);
+    return chunks;
+}
+
+async function prepareTelegramTextForModel(userText: string, modelId: string): Promise<{ text: string; chunked: boolean; chunks: number }> {
+    const src = (userText || '').trim();
+    const SOFT_LIMIT = 6000;
+    if (src.length <= SOFT_LIMIT) return { text: src, chunked: false, chunks: 1 };
+    const chunks = _splitTextSmart(src, 5000).slice(0, 12);
+    const summaries: string[] = [];
+    for (let i = 0; i < chunks.length; i++) {
+        const summary = await _quickLLMCall(
+            '긴 텔레그램 입력의 일부를 압축하는 비서입니다. 사용자의 의도, 요청, 제약, 날짜/숫자/URL/파일명/명령을 보존하세요. 불필요한 수사는 제거하고 한국어 bullet로 8줄 이하 요약만 출력하세요.',
+            `[청크 ${i + 1}/${chunks.length}]\n${chunks[i]}`,
+            512,
+            modelId,
+        );
+        summaries.push(`청크 ${i + 1}: ${summary || chunks[i].slice(0, 800)}`);
+    }
+    const omitted = _splitTextSmart(src, 5000).length > chunks.length
+        ? `\n\n[주의] 원문이 매우 길어 앞 ${chunks.length}개 청크를 우선 압축했습니다.`
+        : '';
+    return {
+        chunked: true,
+        chunks: chunks.length,
+        text: `[긴 텔레그램 입력 압축본]\n원문 길이: ${src.length}자\n분할 청크: ${chunks.length}개\n\n${summaries.join('\n\n')}${omitted}\n\n위 압축본을 원문 사용자의 요청으로 간주해 처리하세요.`,
+    };
 }
 
 const CEO_CLASSIFIER_PROMPT = _loadPrompt('ceo-classifier.md');
@@ -2438,6 +2490,10 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
     try { _activeChatProvider?.postSystemNote?.(`텔레그램: "${userText.slice(0, 200)}"`, '📱'); } catch { /* ignore */ }
     /* Show the bot is working — Telegram typing indicator */
     sendTelegramTyping().catch(() => { /* ignore */ });
+    if (shouldAnswerAgentCapabilitiesDirectly(userText)) {
+        await answerAgentCapabilitiesWithLLM(userText);
+        return;
+    }
     /* Push the user's message into short-term memory BEFORE we build the
        prompt — Secretary needs to see "그 일정", "방금 그거" type follow-ups
        in context. Reply gets pushed at each branch below so the next turn's
@@ -2488,6 +2544,11 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
     const today = new Date();
     const todayStr = today.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     let ctxBlock = `\n\n[현재 시각]\n${today.toLocaleString('ko-KR')} (${todayStr})`;
+    const wantsAgentCatalog = shouldAttachAgentCapabilityCatalog(userText);
+    const agentCatalog = wantsAgentCatalog ? buildAgentCapabilityCatalogForSecretary() : '';
+    if (agentCatalog) {
+        ctxBlock += `\n\n[전체 에이전트 역할·스킬·툴 카탈로그]\n${agentCatalog}\n\n사용자가 에이전트별 역할, 스킬, 도구, 가능한 업무를 물으면 이 카탈로그 기준으로 전원에 대해 답하세요. 답변이 길면 1차 요약을 먼저 주고, 더 자세한 내용은 특정 에이전트 이름을 물어보라고 안내하세요.`;
+    }
     try {
         const dir = getCompanyDir();
         const cal = _safeReadText(path.join(dir, '_shared', 'calendar_cache.md'));
@@ -2544,9 +2605,22 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
        Secretary answer cross-channel follow-ups like "developer가 사이트 어떻게
        하고 있어?" without re-dispatching. Conservative size (1500 chars) to
        avoid blowing past LM Studio's default context window. */
-    const companyLog = readRecentConversations(1500);
+    const companyLog = readRecentConversations(wantsAgentCatalog ? 500 : 1500);
     if (companyLog && companyLog.trim()) {
         ctxBlock += companyLog;
+    }
+
+    const secretaryModel = getAgentModel('secretary', getConfig().defaultModel || '');
+    let userTextForModel = userText;
+    try {
+        const prepared = await prepareTelegramTextForModel(userText, secretaryModel);
+        userTextForModel = prepared.text;
+        if (prepared.chunked) {
+            await sendTelegramReport(`🧩 *비서*: 메시지가 길어서 ${prepared.chunks}개 청크로 나눠 요약한 뒤 처리할게요.`);
+        }
+    } catch (e: any) {
+        await sendTelegramReport(`⚠️ 긴 메시지 분할 요약 중 오류가 났어요. 원문 앞부분 기준으로 처리할게요: ${e?.message || e}`);
+        userTextForModel = userText.slice(0, 6000);
     }
 
     let raw = '';
@@ -2554,8 +2628,7 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
         /* 800 (was 500) — calendar_create with description + location can blow
            past 500 and arrive truncated. Truncated JSON has no balanced close
            brace, defeats the parser, and leaks raw `{"mode":...` to the user. */
-        const secretaryModel = getAgentModel('secretary', getConfig().defaultModel || '');
-        raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userText, 2048, secretaryModel);
+        raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userTextForModel, 2048, secretaryModel);
     } catch (e: any) {
         await sendTelegramReport(`⚠️ 비서가 응답하지 못했어요: ${e?.message || e}`);
         return;
@@ -2567,7 +2640,7 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
         const textM = raw.match(/"text"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
         const rescuedText = textM ? textM[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').trim() : '';
         if (rescuedText) {
-            await sendTelegramLong(`💬 *비서*: ${rescuedText.slice(0, 1500)}`);
+            await sendTelegramLong(`💬 *비서*: ${rescuedText}`);
             try { _activeChatProvider?.postSystemNote?.(`비서 → 텔레그램 (JSON 복구): ${rescuedText.slice(0, 300)}`, '💬'); } catch { /* ignore */ }
             return;
         }
@@ -2588,7 +2661,7 @@ async function handleTelegramViaSecretary(userText: string): Promise<void> {
         return;
     }
 
-    const replyText = (typeof parsed.text === 'string' ? parsed.text : '').trim().slice(0, 3500);
+    const replyText = (typeof parsed.text === 'string' ? parsed.text : '').trim();
     const mode = parsed.mode;
 
     /* Tracker — Secretary may flag this message as a trackable commitment. */
@@ -6542,6 +6615,112 @@ function listAgentTools(agentId: string): AgentTool[] {
     out.push({ name, displayName, description, scriptPath, configPath, readmePath, config, configSchema, injectedAt, injectedFrom, enabled });
   }
   return out;
+}
+
+function shouldAttachAgentCapabilityCatalog(text: string): boolean {
+  const q = (text || '').toLowerCase();
+  return /에이전트|agent|스킬|skill|툴|tool|역할|무슨\s*일|뭘\s*할|나머지|전체\s*멤버|팀\s*구성|직원/.test(q);
+}
+
+function shouldAnswerAgentCapabilitiesDirectly(text: string): boolean {
+  const q = (text || '').toLowerCase();
+  const mentionsAgent = /에이전트|agent|직원|팀원|나머지/.test(q);
+  const asksCapabilities = /스킬|skill|툴|tool|역할|무슨\s*일|뭘\s*할|할\s*수|어떤|나머지|전체|목록|설명|알려/.test(q);
+  return mentionsAgent && asksCapabilities && !/만들|생성|추가|수정|활성화|비활성화|실행|배정|할당/.test(q);
+}
+
+async function answerAgentCapabilitiesWithLLM(userText: string): Promise<void> {
+  const catalog = buildAgentCapabilityCatalogForSecretary();
+  if (!catalog) {
+    await sendTelegramLong('💬 *비서*: 에이전트 카탈로그를 읽지 못했어요. _company/_agents 폴더를 먼저 확인해 주세요.');
+    return;
+  }
+  const lines = catalog.split('\n').filter(Boolean);
+  const batches: string[][] = [];
+  for (let i = 0; i < lines.length; i += 4) batches.push(lines.slice(i, i + 4));
+  const model = getAgentModel('secretary', getConfig().defaultModel || '');
+  await sendTelegramReport(`🧩 *비서*: 전체 ${lines.length}명이라 ${batches.length}개 파트로 나눠서 LLM으로 정리할게요.`);
+
+  const systemPrompt = [
+    '당신은 Connect AI의 한국어 비서입니다.',
+    '아래 에이전트 카탈로그 원자료를 그대로 복붙하지 말고, 사용자가 이해하기 좋게 자연스럽게 해석해서 설명하세요.',
+    '각 에이전트마다 역할, 보유/연결된 툴, 매핑된 스킬의 성격, 맡길 수 있는 일을 2~4줄로 요약하세요.',
+    '툴 이름과 스킬 개수 같은 사실은 유지하되, 설명은 사람에게 말하듯 부드럽게 하세요.',
+    '없는 기능을 실제 가능하다고 과장하지 말고, planned/게이트가 필요한 작업은 조심스럽게 표현하세요.',
+    '마크다운은 텔레그램에서 읽기 좋게 간단히만 사용하세요.',
+  ].join('\n');
+
+  for (let i = 0; i < batches.length; i++) {
+    const userBlock = [
+      `사용자 질문: ${userText}`,
+      `파트: ${i + 1}/${batches.length}`,
+      '이번 파트의 에이전트 원자료:',
+      batches[i].join('\n'),
+      '',
+      '이번 파트만 답하세요. 마지막 파트가 아니면 끝에 "다음 파트에서 이어서 설명할게요."라고 덧붙이세요.',
+    ].join('\n');
+    try {
+      const raw = await _quickLLMCall(systemPrompt, userBlock, 1800, model);
+      const text = (raw || '').trim();
+      if (!text) throw new Error('LLM returned empty content');
+      await sendTelegramLong(`💬 *비서* (${i + 1}/${batches.length})\n\n${text}`);
+      _pushTelegramHistory('assistant', `에이전트 카탈로그 파트 ${i + 1}/${batches.length}: ${text.slice(0, 300)}`);
+    } catch (e: any) {
+      await sendTelegramLong(`⚠️ *비서*: 에이전트 설명 ${i + 1}/${batches.length} 파트를 LLM으로 정리하다가 멈췄어요: ${e?.message || e}\n\n요청을 더 작은 범위로 나눠 다시 물어보면 이어서 설명할게요.`);
+      return;
+    }
+  }
+}
+
+function buildAgentCapabilityCatalogForSecretary(maxAgents = 20): string {
+  try {
+    const dir = path.join(getCompanyDir(), '_agents');
+    if (!fs.existsSync(dir)) return '';
+    const ids = (typeof AGENT_ORDER !== 'undefined' && Array.isArray(AGENT_ORDER) && AGENT_ORDER.length > 0)
+      ? AGENT_ORDER.filter(id => fs.existsSync(path.join(dir, id)))
+      : fs.readdirSync(dir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name).sort();
+    const fallback: Record<string, { role: string; can: string }> = {
+      ceo: { role: '총괄 의사결정/작업 라우팅', can: '요청을 분해하고 적합한 담당자에게 배정, 다음 액션과 승인 게이트 결정' },
+      youtube: { role: 'YouTube 채널 전략/운영', can: '트렌드 분석, 영상 아이디어, 제목/후킹/메타데이터, 채널 성과 분석' },
+      instagram: { role: 'Instagram 콘텐츠/게시 전략', can: '릴스/피드/스토리 기획, 캡션/해시태그, 게시 타이밍과 참여 전략' },
+      designer: { role: '브랜드/시각 디자인', can: '썸네일/비주얼 콘셉트, 컬러/레이아웃, 디자인 시스템과 에셋 방향 제안' },
+      developer: { role: '웹/앱/자동화 구현', can: '프로젝트 생성, 코드 수정, API 연동, 프리뷰 실행, 린트/테스트' },
+      business: { role: '수익/사업 전략', can: 'PayPal 매출 분석, 가격/ROI/KPI, 비즈니스 의사결정 자료 정리' },
+      secretary: { role: '비서/일정/텔레그램 허브', can: '텔레그램 응답, 캘린더 읽기/쓰기, 작업 추적, CEO 라우팅' },
+      editor: { role: '사운드/음악/영상 보조', can: 'BGM 생성, 음악 모델 설정, 음악-영상 합성 보조' },
+      writer: { role: '카피/스크립트 작성', can: '영상 스크립트, 광고 카피, 블로그/메일/캡션, 후킹 문장 작성' },
+      researcher: { role: '조사/자료 수집', can: '트렌드 리서치, 경쟁 분석, 출처 기반 요약, 사실 확인' },
+      security: { role: '보안 감사/승인 정책', can: '시크릿 스캔, 의존성 감사, 위협 모델링, 위험 작업 승인 게이트 점검' },
+      devops: { role: '인프라/배포/운영', can: 'CI 진단, Docker/배포 계획, 로그/관측성, 안전한 릴리스 체크' },
+      data: { role: '데이터/BI 분석', can: 'CSV/XLSX 프로파일링, KPI 대시보드, SQL 리뷰, 분석 리포트' },
+      product: { role: '제품 기획/PM', can: 'PRD, 로드맵, 우선순위, 실험 설계, 출시 체크리스트' },
+      automation: { role: '워크플로/API 자동화', can: '반복 업무를 MCP/API 도구로 설계, 외부 API 커넥터와 안전 게이트 구성' },
+      mobile: { role: '모바일 앱 개발', can: 'Expo/React Native 구조, 모바일 UI 리뷰, 스토어 출시 준비와 기기 테스트 계획' },
+    };
+    const lines: string[] = [];
+    for (const id of ids.slice(0, maxAgents)) {
+      const spec = AGENTS[id];
+      const agentDir = path.join(dir, id);
+      const tools = listAgentTools(id).filter(t => t.enabled);
+      const catalogTools = (AGENT_TOOLS_CATALOG[id] || []).filter(t => !t.planned).map(t => t.tool);
+      const skillIndexPath = path.join(agentDir, 'skills', 'antigravity-skill-index.md');
+      const skillIndex = _safeReadText(skillIndexPath);
+      const skillCount = Number((skillIndex.match(/Assigned skills:\s*(\d+)/i) || [])[1] || 0);
+      const skillNames = Array.from(skillIndex.matchAll(/\|\s*`([^`]+)`\s*\|/g))
+        .map(m => m[1])
+        .filter(Boolean)
+        .slice(0, 4);
+      const toolNames = Array.from(new Set([...tools.map(t => t.name), ...catalogTools])).slice(0, 8);
+      const toolSummary = toolNames.length > 0
+        ? toolNames.join(', ')
+        : 'none';
+      const fb = fallback[id] || { role: spec?.role || id, can: spec?.specialty || '' };
+      lines.push(`- ${id} (${spec?.name || id}): ${fb.role}. Can: ${fb.can}. Tools(${toolNames.length}): ${toolSummary}. Skills(${skillCount}): ${skillNames.join(', ') || 'none'}.`);
+    }
+    return lines.join('\n').slice(0, 12000);
+  } catch {
+    return '';
+  }
 }
 
 function writeToolConfig(agentId: string, toolName: string, config: Record<string, any>) {

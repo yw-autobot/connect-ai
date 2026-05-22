@@ -16776,14 +16776,69 @@ async function _quickLLMCall(systemPrompt, userMsg, maxTokens = 64, modelOverrid
     { role: "user", content: userMsg }
   ];
   const tmo = Math.min(timeout || 6e4, 6e5);
-  if (isLMStudio) {
-    const body2 = { model, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
-    const r2 = await axios_default.post(apiUrl, body2, { timeout: tmo });
-    return r2.data?.choices?.[0]?.message?.content?.toString().trim() || "";
+  try {
+    if (isLMStudio) {
+      const body2 = { model, messages, stream: false, max_tokens: maxTokens, temperature: 0.2 };
+      const r2 = await axios_default.post(apiUrl, body2, { timeout: tmo });
+      return r2.data?.choices?.[0]?.message?.content?.toString().trim() || "";
+    }
+    const body = { model, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
+    const r = await axios_default.post(apiUrl, body, { timeout: tmo });
+    return r.data?.message?.content?.toString().trim() || "";
+  } catch (e) {
+    const status = e?.response?.status;
+    const data = e?.response?.data;
+    const detail = typeof data === "string" ? data.slice(0, 500) : data ? JSON.stringify(data).slice(0, 500) : "";
+    const suffix = detail ? `: ${detail}` : "";
+    throw new Error(status ? `LLM HTTP ${status}${suffix}` : e?.message || String(e));
   }
-  const body = { model, messages, stream: false, options: { num_predict: maxTokens, temperature: 0.2 } };
-  const r = await axios_default.post(apiUrl, body, { timeout: tmo });
-  return r.data?.message?.content?.toString().trim() || "";
+}
+function _splitTextSmart(text, maxChars = 5e3) {
+  const src = (text || "").trim();
+  if (!src) return [];
+  const chunks = [];
+  let remaining = src;
+  while (remaining.length > maxChars) {
+    let splitAt = remaining.lastIndexOf("\n\n", maxChars);
+    if (splitAt < maxChars * 0.55) splitAt = remaining.lastIndexOf("\n", maxChars);
+    if (splitAt < maxChars * 0.55) splitAt = remaining.lastIndexOf(". ", maxChars);
+    if (splitAt < maxChars * 0.35) splitAt = maxChars;
+    chunks.push(remaining.slice(0, splitAt).trim());
+    remaining = remaining.slice(splitAt).trim();
+  }
+  if (remaining) chunks.push(remaining);
+  return chunks;
+}
+async function prepareTelegramTextForModel(userText, modelId) {
+  const src = (userText || "").trim();
+  const SOFT_LIMIT = 6e3;
+  if (src.length <= SOFT_LIMIT) return { text: src, chunked: false, chunks: 1 };
+  const chunks = _splitTextSmart(src, 5e3).slice(0, 12);
+  const summaries = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const summary = await _quickLLMCall(
+      "\uAE34 \uD154\uB808\uADF8\uB7A8 \uC785\uB825\uC758 \uC77C\uBD80\uB97C \uC555\uCD95\uD558\uB294 \uBE44\uC11C\uC785\uB2C8\uB2E4. \uC0AC\uC6A9\uC790\uC758 \uC758\uB3C4, \uC694\uCCAD, \uC81C\uC57D, \uB0A0\uC9DC/\uC22B\uC790/URL/\uD30C\uC77C\uBA85/\uBA85\uB839\uC744 \uBCF4\uC874\uD558\uC138\uC694. \uBD88\uD544\uC694\uD55C \uC218\uC0AC\uB294 \uC81C\uAC70\uD558\uACE0 \uD55C\uAD6D\uC5B4 bullet\uB85C 8\uC904 \uC774\uD558 \uC694\uC57D\uB9CC \uCD9C\uB825\uD558\uC138\uC694.",
+      `[\uCCAD\uD06C ${i + 1}/${chunks.length}]
+${chunks[i]}`,
+      512,
+      modelId
+    );
+    summaries.push(`\uCCAD\uD06C ${i + 1}: ${summary || chunks[i].slice(0, 800)}`);
+  }
+  const omitted = _splitTextSmart(src, 5e3).length > chunks.length ? `
+
+[\uC8FC\uC758] \uC6D0\uBB38\uC774 \uB9E4\uC6B0 \uAE38\uC5B4 \uC55E ${chunks.length}\uAC1C \uCCAD\uD06C\uB97C \uC6B0\uC120 \uC555\uCD95\uD588\uC2B5\uB2C8\uB2E4.` : "";
+  return {
+    chunked: true,
+    chunks: chunks.length,
+    text: `[\uAE34 \uD154\uB808\uADF8\uB7A8 \uC785\uB825 \uC555\uCD95\uBCF8]
+\uC6D0\uBB38 \uAE38\uC774: ${src.length}\uC790
+\uBD84\uD560 \uCCAD\uD06C: ${chunks.length}\uAC1C
+
+${summaries.join("\n\n")}${omitted}
+
+\uC704 \uC555\uCD95\uBCF8\uC744 \uC6D0\uBB38 \uC0AC\uC6A9\uC790\uC758 \uC694\uCCAD\uC73C\uB85C \uAC04\uC8FC\uD574 \uCC98\uB9AC\uD558\uC138\uC694.`
+  };
 }
 var CEO_CLASSIFIER_PROMPT = _loadPrompt("ceo-classifier.md");
 var SECRETARY_TELEGRAM_PROMPT = _loadPrompt("secretary-telegram.md");
@@ -17138,6 +17193,10 @@ async function handleTelegramViaSecretary(userText) {
   }
   sendTelegramTyping().catch(() => {
   });
+  if (shouldAnswerAgentCapabilitiesDirectly(userText)) {
+    await answerAgentCapabilitiesWithLLM(userText);
+    return;
+  }
   _pushTelegramHistory("user", userText);
   const cancelQ = /^\s*(취소|중단|중지|그만|멈춰|멈춰줘|stop|cancel|abort|nevermind|never\s*mind)\s*[\.!\?]*\s*$/i;
   if (cancelQ.test(userText)) {
@@ -17186,6 +17245,16 @@ async function handleTelegramViaSecretary(userText) {
 
 [\uD604\uC7AC \uC2DC\uAC01]
 ${today.toLocaleString("ko-KR")} (${todayStr})`;
+  const wantsAgentCatalog = shouldAttachAgentCapabilityCatalog(userText);
+  const agentCatalog = wantsAgentCatalog ? buildAgentCapabilityCatalogForSecretary() : "";
+  if (agentCatalog) {
+    ctxBlock += `
+
+[\uC804\uCCB4 \uC5D0\uC774\uC804\uD2B8 \uC5ED\uD560\xB7\uC2A4\uD0AC\xB7\uD234 \uCE74\uD0C8\uB85C\uADF8]
+${agentCatalog}
+
+\uC0AC\uC6A9\uC790\uAC00 \uC5D0\uC774\uC804\uD2B8\uBCC4 \uC5ED\uD560, \uC2A4\uD0AC, \uB3C4\uAD6C, \uAC00\uB2A5\uD55C \uC5C5\uBB34\uB97C \uBB3C\uC73C\uBA74 \uC774 \uCE74\uD0C8\uB85C\uADF8 \uAE30\uC900\uC73C\uB85C \uC804\uC6D0\uC5D0 \uB300\uD574 \uB2F5\uD558\uC138\uC694. \uB2F5\uBCC0\uC774 \uAE38\uBA74 1\uCC28 \uC694\uC57D\uC744 \uBA3C\uC800 \uC8FC\uACE0, \uB354 \uC790\uC138\uD55C \uB0B4\uC6A9\uC740 \uD2B9\uC815 \uC5D0\uC774\uC804\uD2B8 \uC774\uB984\uC744 \uBB3C\uC5B4\uBCF4\uB77C\uACE0 \uC548\uB0B4\uD558\uC138\uC694.`;
+  }
   try {
     const dir = getCompanyDir();
     const cal = _safeReadText(path2.join(dir, "_shared", "calendar_cache.md"));
@@ -17253,14 +17322,25 @@ ${historyBlock}
 
 _\uC0AC\uC6A9\uC790\uAC00 "\uADF8\uAC70"\xB7"\uBC29\uAE08 \uADF8 \uC77C\uC815"\xB7"\uADF8 \uD68C\uC758" \uB77C\uACE0 \uD558\uBA74 \uC704 \uB300\uD654\uC5D0\uC11C \uC5B4\uB5A4 \uC77C\uC815/\uC8FC\uC81C\uC778\uC9C0 \uCC3E\uC544\uC11C \uCC98\uB9AC\uD558\uC138\uC694._`;
   }
-  const companyLog = readRecentConversations(1500);
+  const companyLog = readRecentConversations(wantsAgentCatalog ? 500 : 1500);
   if (companyLog && companyLog.trim()) {
     ctxBlock += companyLog;
   }
+  const secretaryModel = getAgentModel("secretary", getConfig().defaultModel || "");
+  let userTextForModel = userText;
+  try {
+    const prepared = await prepareTelegramTextForModel(userText, secretaryModel);
+    userTextForModel = prepared.text;
+    if (prepared.chunked) {
+      await sendTelegramReport(`\u{1F9E9} *\uBE44\uC11C*: \uBA54\uC2DC\uC9C0\uAC00 \uAE38\uC5B4\uC11C ${prepared.chunks}\uAC1C \uCCAD\uD06C\uB85C \uB098\uB220 \uC694\uC57D\uD55C \uB4A4 \uCC98\uB9AC\uD560\uAC8C\uC694.`);
+    }
+  } catch (e) {
+    await sendTelegramReport(`\u26A0\uFE0F \uAE34 \uBA54\uC2DC\uC9C0 \uBD84\uD560 \uC694\uC57D \uC911 \uC624\uB958\uAC00 \uB0AC\uC5B4\uC694. \uC6D0\uBB38 \uC55E\uBD80\uBD84 \uAE30\uC900\uC73C\uB85C \uCC98\uB9AC\uD560\uAC8C\uC694: ${e?.message || e}`);
+    userTextForModel = userText.slice(0, 6e3);
+  }
   let raw = "";
   try {
-    const secretaryModel = getAgentModel("secretary", getConfig().defaultModel || "");
-    raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userText, 2048, secretaryModel);
+    raw = await _quickLLMCall(SECRETARY_TELEGRAM_PROMPT + ctxBlock, userTextForModel, 2048, secretaryModel);
   } catch (e) {
     await sendTelegramReport(`\u26A0\uFE0F \uBE44\uC11C\uAC00 \uC751\uB2F5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694: ${e?.message || e}`);
     return;
@@ -17270,7 +17350,7 @@ _\uC0AC\uC6A9\uC790\uAC00 "\uADF8\uAC70"\xB7"\uBC29\uAE08 \uADF8 \uC77C\uC815"\x
     const textM = raw.match(/"text"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
     const rescuedText = textM ? textM[1].replace(/\\n/g, "\n").replace(/\\"/g, '"').trim() : "";
     if (rescuedText) {
-      await sendTelegramLong(`\u{1F4AC} *\uBE44\uC11C*: ${rescuedText.slice(0, 1500)}`);
+      await sendTelegramLong(`\u{1F4AC} *\uBE44\uC11C*: ${rescuedText}`);
       try {
         _activeChatProvider?.postSystemNote?.(`\uBE44\uC11C \u2192 \uD154\uB808\uADF8\uB7A8 (JSON \uBCF5\uAD6C): ${rescuedText.slice(0, 300)}`, "\u{1F4AC}");
       } catch {
@@ -17290,7 +17370,7 @@ _\uC0AC\uC6A9\uC790\uAC00 "\uADF8\uAC70"\xB7"\uBC29\uAE08 \uADF8 \uC77C\uC815"\x
     }
     return;
   }
-  const replyText = (typeof parsed.text === "string" ? parsed.text : "").trim().slice(0, 3500);
+  const replyText = (typeof parsed.text === "string" ? parsed.text : "").trim();
   const mode = parsed.mode;
   let trackedId = "";
   try {
@@ -20910,6 +20990,103 @@ function listAgentTools(agentId) {
     out.push({ name, displayName, description, scriptPath, configPath, readmePath, config, configSchema, injectedAt, injectedFrom, enabled });
   }
   return out;
+}
+function shouldAttachAgentCapabilityCatalog(text) {
+  const q = (text || "").toLowerCase();
+  return /에이전트|agent|스킬|skill|툴|tool|역할|무슨\s*일|뭘\s*할|나머지|전체\s*멤버|팀\s*구성|직원/.test(q);
+}
+function shouldAnswerAgentCapabilitiesDirectly(text) {
+  const q = (text || "").toLowerCase();
+  const mentionsAgent = /에이전트|agent|직원|팀원|나머지/.test(q);
+  const asksCapabilities = /스킬|skill|툴|tool|역할|무슨\s*일|뭘\s*할|할\s*수|어떤|나머지|전체|목록|설명|알려/.test(q);
+  return mentionsAgent && asksCapabilities && !/만들|생성|추가|수정|활성화|비활성화|실행|배정|할당/.test(q);
+}
+async function answerAgentCapabilitiesWithLLM(userText) {
+  const catalog = buildAgentCapabilityCatalogForSecretary();
+  if (!catalog) {
+    await sendTelegramLong("\u{1F4AC} *\uBE44\uC11C*: \uC5D0\uC774\uC804\uD2B8 \uCE74\uD0C8\uB85C\uADF8\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694. _company/_agents \uD3F4\uB354\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    return;
+  }
+  const lines = catalog.split("\n").filter(Boolean);
+  const batches = [];
+  for (let i = 0; i < lines.length; i += 4) batches.push(lines.slice(i, i + 4));
+  const model = getAgentModel("secretary", getConfig().defaultModel || "");
+  await sendTelegramReport(`\u{1F9E9} *\uBE44\uC11C*: \uC804\uCCB4 ${lines.length}\uBA85\uC774\uB77C ${batches.length}\uAC1C \uD30C\uD2B8\uB85C \uB098\uB220\uC11C LLM\uC73C\uB85C \uC815\uB9AC\uD560\uAC8C\uC694.`);
+  const systemPrompt = [
+    "\uB2F9\uC2E0\uC740 Connect AI\uC758 \uD55C\uAD6D\uC5B4 \uBE44\uC11C\uC785\uB2C8\uB2E4.",
+    "\uC544\uB798 \uC5D0\uC774\uC804\uD2B8 \uCE74\uD0C8\uB85C\uADF8 \uC6D0\uC790\uB8CC\uB97C \uADF8\uB300\uB85C \uBCF5\uBD99\uD558\uC9C0 \uB9D0\uACE0, \uC0AC\uC6A9\uC790\uAC00 \uC774\uD574\uD558\uAE30 \uC88B\uAC8C \uC790\uC5F0\uC2A4\uB7FD\uAC8C \uD574\uC11D\uD574\uC11C \uC124\uBA85\uD558\uC138\uC694.",
+    "\uAC01 \uC5D0\uC774\uC804\uD2B8\uB9C8\uB2E4 \uC5ED\uD560, \uBCF4\uC720/\uC5F0\uACB0\uB41C \uD234, \uB9E4\uD551\uB41C \uC2A4\uD0AC\uC758 \uC131\uACA9, \uB9E1\uAE38 \uC218 \uC788\uB294 \uC77C\uC744 2~4\uC904\uB85C \uC694\uC57D\uD558\uC138\uC694.",
+    "\uD234 \uC774\uB984\uACFC \uC2A4\uD0AC \uAC1C\uC218 \uAC19\uC740 \uC0AC\uC2E4\uC740 \uC720\uC9C0\uD558\uB418, \uC124\uBA85\uC740 \uC0AC\uB78C\uC5D0\uAC8C \uB9D0\uD558\uB4EF \uBD80\uB4DC\uB7FD\uAC8C \uD558\uC138\uC694.",
+    "\uC5C6\uB294 \uAE30\uB2A5\uC744 \uC2E4\uC81C \uAC00\uB2A5\uD558\uB2E4\uACE0 \uACFC\uC7A5\uD558\uC9C0 \uB9D0\uACE0, planned/\uAC8C\uC774\uD2B8\uAC00 \uD544\uC694\uD55C \uC791\uC5C5\uC740 \uC870\uC2EC\uC2A4\uB7FD\uAC8C \uD45C\uD604\uD558\uC138\uC694.",
+    "\uB9C8\uD06C\uB2E4\uC6B4\uC740 \uD154\uB808\uADF8\uB7A8\uC5D0\uC11C \uC77D\uAE30 \uC88B\uAC8C \uAC04\uB2E8\uD788\uB9CC \uC0AC\uC6A9\uD558\uC138\uC694."
+  ].join("\n");
+  for (let i = 0; i < batches.length; i++) {
+    const userBlock = [
+      `\uC0AC\uC6A9\uC790 \uC9C8\uBB38: ${userText}`,
+      `\uD30C\uD2B8: ${i + 1}/${batches.length}`,
+      "\uC774\uBC88 \uD30C\uD2B8\uC758 \uC5D0\uC774\uC804\uD2B8 \uC6D0\uC790\uB8CC:",
+      batches[i].join("\n"),
+      "",
+      '\uC774\uBC88 \uD30C\uD2B8\uB9CC \uB2F5\uD558\uC138\uC694. \uB9C8\uC9C0\uB9C9 \uD30C\uD2B8\uAC00 \uC544\uB2C8\uBA74 \uB05D\uC5D0 "\uB2E4\uC74C \uD30C\uD2B8\uC5D0\uC11C \uC774\uC5B4\uC11C \uC124\uBA85\uD560\uAC8C\uC694."\uB77C\uACE0 \uB367\uBD99\uC774\uC138\uC694.'
+    ].join("\n");
+    try {
+      const raw = await _quickLLMCall(systemPrompt, userBlock, 1800, model);
+      const text = (raw || "").trim();
+      if (!text) throw new Error("LLM returned empty content");
+      await sendTelegramLong(`\u{1F4AC} *\uBE44\uC11C* (${i + 1}/${batches.length})
+
+${text}`);
+      _pushTelegramHistory("assistant", `\uC5D0\uC774\uC804\uD2B8 \uCE74\uD0C8\uB85C\uADF8 \uD30C\uD2B8 ${i + 1}/${batches.length}: ${text.slice(0, 300)}`);
+    } catch (e) {
+      await sendTelegramLong(`\u26A0\uFE0F *\uBE44\uC11C*: \uC5D0\uC774\uC804\uD2B8 \uC124\uBA85 ${i + 1}/${batches.length} \uD30C\uD2B8\uB97C LLM\uC73C\uB85C \uC815\uB9AC\uD558\uB2E4\uAC00 \uBA48\uCDC4\uC5B4\uC694: ${e?.message || e}
+
+\uC694\uCCAD\uC744 \uB354 \uC791\uC740 \uBC94\uC704\uB85C \uB098\uB220 \uB2E4\uC2DC \uBB3C\uC5B4\uBCF4\uBA74 \uC774\uC5B4\uC11C \uC124\uBA85\uD560\uAC8C\uC694.`);
+      return;
+    }
+  }
+}
+function buildAgentCapabilityCatalogForSecretary(maxAgents = 20) {
+  try {
+    const dir = path2.join(getCompanyDir(), "_agents");
+    if (!fs.existsSync(dir)) return "";
+    const ids = typeof AGENT_ORDER !== "undefined" && Array.isArray(AGENT_ORDER) && AGENT_ORDER.length > 0 ? AGENT_ORDER.filter((id) => fs.existsSync(path2.join(dir, id))) : fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort();
+    const fallback = {
+      ceo: { role: "\uCD1D\uAD04 \uC758\uC0AC\uACB0\uC815/\uC791\uC5C5 \uB77C\uC6B0\uD305", can: "\uC694\uCCAD\uC744 \uBD84\uD574\uD558\uACE0 \uC801\uD569\uD55C \uB2F4\uB2F9\uC790\uC5D0\uAC8C \uBC30\uC815, \uB2E4\uC74C \uC561\uC158\uACFC \uC2B9\uC778 \uAC8C\uC774\uD2B8 \uACB0\uC815" },
+      youtube: { role: "YouTube \uCC44\uB110 \uC804\uB7B5/\uC6B4\uC601", can: "\uD2B8\uB80C\uB4DC \uBD84\uC11D, \uC601\uC0C1 \uC544\uC774\uB514\uC5B4, \uC81C\uBAA9/\uD6C4\uD0B9/\uBA54\uD0C0\uB370\uC774\uD130, \uCC44\uB110 \uC131\uACFC \uBD84\uC11D" },
+      instagram: { role: "Instagram \uCF58\uD150\uCE20/\uAC8C\uC2DC \uC804\uB7B5", can: "\uB9B4\uC2A4/\uD53C\uB4DC/\uC2A4\uD1A0\uB9AC \uAE30\uD68D, \uCEA1\uC158/\uD574\uC2DC\uD0DC\uADF8, \uAC8C\uC2DC \uD0C0\uC774\uBC0D\uACFC \uCC38\uC5EC \uC804\uB7B5" },
+      designer: { role: "\uBE0C\uB79C\uB4DC/\uC2DC\uAC01 \uB514\uC790\uC778", can: "\uC378\uB124\uC77C/\uBE44\uC8FC\uC5BC \uCF58\uC149\uD2B8, \uCEEC\uB7EC/\uB808\uC774\uC544\uC6C3, \uB514\uC790\uC778 \uC2DC\uC2A4\uD15C\uACFC \uC5D0\uC14B \uBC29\uD5A5 \uC81C\uC548" },
+      developer: { role: "\uC6F9/\uC571/\uC790\uB3D9\uD654 \uAD6C\uD604", can: "\uD504\uB85C\uC81D\uD2B8 \uC0DD\uC131, \uCF54\uB4DC \uC218\uC815, API \uC5F0\uB3D9, \uD504\uB9AC\uBDF0 \uC2E4\uD589, \uB9B0\uD2B8/\uD14C\uC2A4\uD2B8" },
+      business: { role: "\uC218\uC775/\uC0AC\uC5C5 \uC804\uB7B5", can: "PayPal \uB9E4\uCD9C \uBD84\uC11D, \uAC00\uACA9/ROI/KPI, \uBE44\uC988\uB2C8\uC2A4 \uC758\uC0AC\uACB0\uC815 \uC790\uB8CC \uC815\uB9AC" },
+      secretary: { role: "\uBE44\uC11C/\uC77C\uC815/\uD154\uB808\uADF8\uB7A8 \uD5C8\uBE0C", can: "\uD154\uB808\uADF8\uB7A8 \uC751\uB2F5, \uCE98\uB9B0\uB354 \uC77D\uAE30/\uC4F0\uAE30, \uC791\uC5C5 \uCD94\uC801, CEO \uB77C\uC6B0\uD305" },
+      editor: { role: "\uC0AC\uC6B4\uB4DC/\uC74C\uC545/\uC601\uC0C1 \uBCF4\uC870", can: "BGM \uC0DD\uC131, \uC74C\uC545 \uBAA8\uB378 \uC124\uC815, \uC74C\uC545-\uC601\uC0C1 \uD569\uC131 \uBCF4\uC870" },
+      writer: { role: "\uCE74\uD53C/\uC2A4\uD06C\uB9BD\uD2B8 \uC791\uC131", can: "\uC601\uC0C1 \uC2A4\uD06C\uB9BD\uD2B8, \uAD11\uACE0 \uCE74\uD53C, \uBE14\uB85C\uADF8/\uBA54\uC77C/\uCEA1\uC158, \uD6C4\uD0B9 \uBB38\uC7A5 \uC791\uC131" },
+      researcher: { role: "\uC870\uC0AC/\uC790\uB8CC \uC218\uC9D1", can: "\uD2B8\uB80C\uB4DC \uB9AC\uC11C\uCE58, \uACBD\uC7C1 \uBD84\uC11D, \uCD9C\uCC98 \uAE30\uBC18 \uC694\uC57D, \uC0AC\uC2E4 \uD655\uC778" },
+      security: { role: "\uBCF4\uC548 \uAC10\uC0AC/\uC2B9\uC778 \uC815\uCC45", can: "\uC2DC\uD06C\uB9BF \uC2A4\uCE94, \uC758\uC874\uC131 \uAC10\uC0AC, \uC704\uD611 \uBAA8\uB378\uB9C1, \uC704\uD5D8 \uC791\uC5C5 \uC2B9\uC778 \uAC8C\uC774\uD2B8 \uC810\uAC80" },
+      devops: { role: "\uC778\uD504\uB77C/\uBC30\uD3EC/\uC6B4\uC601", can: "CI \uC9C4\uB2E8, Docker/\uBC30\uD3EC \uACC4\uD68D, \uB85C\uADF8/\uAD00\uCE21\uC131, \uC548\uC804\uD55C \uB9B4\uB9AC\uC2A4 \uCCB4\uD06C" },
+      data: { role: "\uB370\uC774\uD130/BI \uBD84\uC11D", can: "CSV/XLSX \uD504\uB85C\uD30C\uC77C\uB9C1, KPI \uB300\uC2DC\uBCF4\uB4DC, SQL \uB9AC\uBDF0, \uBD84\uC11D \uB9AC\uD3EC\uD2B8" },
+      product: { role: "\uC81C\uD488 \uAE30\uD68D/PM", can: "PRD, \uB85C\uB4DC\uB9F5, \uC6B0\uC120\uC21C\uC704, \uC2E4\uD5D8 \uC124\uACC4, \uCD9C\uC2DC \uCCB4\uD06C\uB9AC\uC2A4\uD2B8" },
+      automation: { role: "\uC6CC\uD06C\uD50C\uB85C/API \uC790\uB3D9\uD654", can: "\uBC18\uBCF5 \uC5C5\uBB34\uB97C MCP/API \uB3C4\uAD6C\uB85C \uC124\uACC4, \uC678\uBD80 API \uCEE4\uB125\uD130\uC640 \uC548\uC804 \uAC8C\uC774\uD2B8 \uAD6C\uC131" },
+      mobile: { role: "\uBAA8\uBC14\uC77C \uC571 \uAC1C\uBC1C", can: "Expo/React Native \uAD6C\uC870, \uBAA8\uBC14\uC77C UI \uB9AC\uBDF0, \uC2A4\uD1A0\uC5B4 \uCD9C\uC2DC \uC900\uBE44\uC640 \uAE30\uAE30 \uD14C\uC2A4\uD2B8 \uACC4\uD68D" }
+    };
+    const lines = [];
+    for (const id of ids.slice(0, maxAgents)) {
+      const spec = AGENTS[id];
+      const agentDir = path2.join(dir, id);
+      const tools = listAgentTools(id).filter((t) => t.enabled);
+      const catalogTools = (AGENT_TOOLS_CATALOG[id] || []).filter((t) => !t.planned).map((t) => t.tool);
+      const skillIndexPath = path2.join(agentDir, "skills", "antigravity-skill-index.md");
+      const skillIndex = _safeReadText(skillIndexPath);
+      const skillCount = Number((skillIndex.match(/Assigned skills:\s*(\d+)/i) || [])[1] || 0);
+      const skillNames = Array.from(skillIndex.matchAll(/\|\s*`([^`]+)`\s*\|/g)).map((m) => m[1]).filter(Boolean).slice(0, 4);
+      const toolNames = Array.from(/* @__PURE__ */ new Set([...tools.map((t) => t.name), ...catalogTools])).slice(0, 8);
+      const toolSummary = toolNames.length > 0 ? toolNames.join(", ") : "none";
+      const fb = fallback[id] || { role: spec?.role || id, can: spec?.specialty || "" };
+      lines.push(`- ${id} (${spec?.name || id}): ${fb.role}. Can: ${fb.can}. Tools(${toolNames.length}): ${toolSummary}. Skills(${skillCount}): ${skillNames.join(", ") || "none"}.`);
+    }
+    return lines.join("\n").slice(0, 12e3);
+  } catch {
+    return "";
+  }
 }
 function writeToolConfig(agentId, toolName, config) {
   const p = path2.join(getCompanyDir(), "_agents", agentId, "tools", `${toolName}.json`);
