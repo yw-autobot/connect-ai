@@ -17,3 +17,4 @@ _Researcher 에이전트만 읽고 쓰는 개인 노트. 학습·교훈·자주 
 - [2026-05-19] 현재 채널의 조회수 높은 영상들의 후킹 요소(Hooking Elements)와 트렌드를 재분석하여, 다음 영상에 적용할 구체적인 스토리텔링 방향과 주제 아이디어를 3가지 제안해줘. → 산출물 sessions/2026-05-19T06-46/researcher.md
 - [2026-05-19] YouTube Analytics 데이터를 기반으로 가장 높은 ROI를 보인 콘텐츠 유형, 시청자들이 반응한 후킹 요소(Hooking Elements), 그리고 이를 바탕으로 다음 3~5개 영상에 적용할 구체적이고 실행 가능한 기획안 및 수익화 전략을 도출하라. → 산출물 sessions/2026-05-19T09-01/researcher.md
 - [2026-05-19] 가장 높은 ROI를 보인 콘텐츠 유형 및 후킹 요소 데이터(`03_DataDriven_Content_Formula_Plan.md`)를 기반으로, 다음 영상 제작에 적용할 구체적인 Pain $ightarrow$ Solution 흐름의 최신 트렌드 데이터를 분석하고 요약하라. → 산출물 sessions/2026-05-19T09-31/researcher.md
+- [2026-05-22] 최근 시장 트렌드 및 경쟁사 분석 데이터를 기반으로, 현재 콘텐츠 전략(후킹 요소)와 가장 높은 ROI를 보일 것으로 예상되는 다음 3개 영상 주제에 대한 구체적인 Pain-Triggered Conversion Rulebook을 작성해줘. → 산출물 sessions/2026-05-22T04-38/researcher.md

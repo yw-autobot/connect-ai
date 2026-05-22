@@ -7,13 +7,13 @@ node_modules/
 *.log
 .cache/
 Thumbs.db
-<<<<<<< HEAD
-=======
 *.local.json
+_company/_agents/*/config.md
+_company/_agents/*/tools/*.json
 _company/_agents/youtube/oauth.local.json
 _company/_agents/secretary/telegram_history.jsonl
 .telegram_offset.json
 .telegram_poll.lock
 .env
 .env.local
->>>>>>> origin/main
+_company/_shared/vendor/antigravity-awesome-skills/

@@ -23,3 +23,4 @@ _레오 에이전트만 읽고 쓰는 개인 노트. 학습·교훈·자주 쓰�
 - [2026-05-19] 연구 결과를 바탕으로, 가장 높은 잠재력을 가진 주제 3가지를 선정하고 각 주제에 대해 'Contrarian Warning' 콘셉트와 Pain $ightarrow$ Solution 흐름을 적용한 영상 기획안 초안(제목, 핵심 후킹 메시지)을 작성하라. → 산출물 sessions/2026-05-19T09-01/youtube.md
 - [2026-05-19] 연구 결과를 바탕으로 가장 높은 잠재력을 가진 주제 3가지 중 하나를 선정하여, 'Pain-Triggered Conversion Rulebook'에 따라 영상 제목, 0:00~0:30 후킹 메시지(Warning/Solution), 핵심 스크립트 초안을 작성하라. → 산출물 sessions/2026-05-19T09-31/youtube.md
 - [2026-05-19] Writer와 Designer가 제시한 콘텐츠 전략과 시각 자료를 기반으로, 다음 4개 영상 업로드에 최적화된 상세 기획안(제목, 후킹 메시지, 썸네일 브리프)을 정리하고 제작 일정을 수립하라. → 산출물 sessions/2026-05-19T10-46/youtube.md
+- [2026-05-22] Business와 Researcher의 분석 결과를 바탕으로, 다음 3개 영상에 대한 최종 제목, 0:00~0:30 후킹 메시지(Warning/Solution), 그리고 핵심 스크립트 초안을 작성해줘. → 산출물 sessions/2026-05-22T04-38/youtube.md

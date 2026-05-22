@@ -36,5 +36,30 @@
   "_migrated_v3": true,
   "editor": {
     "activatedAt": "2026-05-19T00:00:56.865Z"
-  }
+  },
+  "security": {
+    "activatedAt": "2026-05-22T00:00:00.000Z",
+    "seeded_antigravity": true
+  },
+  "devops": {
+    "activatedAt": "2026-05-22T00:00:00.000Z",
+    "seeded_antigravity": true
+  },
+  "data": {
+    "activatedAt": "2026-05-22T00:00:00.000Z",
+    "seeded_antigravity": true
+  },
+  "product": {
+    "activatedAt": "2026-05-22T00:00:00.000Z",
+    "seeded_antigravity": true
+  },
+  "automation": {
+    "activatedAt": "2026-05-22T00:00:00.000Z",
+    "seeded_antigravity": true
+  },
+  "mobile": {
+    "activatedAt": "2026-05-22T00:00:00.000Z",
+    "seeded_antigravity": true
+  },
+  "_migrated_v4": true
 }

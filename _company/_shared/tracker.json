@@ -35,9 +35,10 @@
       "owner": "user",
       "createdAt": "2026-05-19T02:31:06.328Z",
       "status": "pending",
-      "nudges": 0,
+      "nudges": 2,
       "priority": "normal",
-      "preAlarmsSent": []
+      "preAlarmsSent": [],
+      "_lastNudgeAt": "2026-05-22T00:45:59.310Z"
     },
     {
       "id": "20260519024934-1wqv",
@@ -210,6 +211,20 @@
       "preAlarmsSent": [],
       "evidence": "완료: sessions/2026-05-19T10-16/_report.md\n- 코다리: Designer가 확정한 'Meta Thumbnail System Blueprint V2.0' 및 Design System 스펙을 기반으로, N\n- Designer: 개발팀이 요구하는 최종 디자인 시안 및 Design System 스펙의 정확성을 검증하고, 코드 구현에 필요한 모든 컴포넌트 사양을 확정하여 전\n- Writer: 구현될 전환 컴포넌트의 배치와 기능이 가장 높은 CTR을 유도할 수 있도록, 최적화된 CTA 카피라이팅 및 Pain-Solution 흐름에 따른\n\nCEO 종합 요점: ## 🗂 작업 라운드 — 누가 뭐 했나\n\n### 💻 코다리 _(시니어 풀스택 엔지니어)_\n> 📋 **지시**: Designer가 확정한 'Meta Thumbnail System Blueprint V2.0' 및 Design System 스펙을 기반으로, Next.js 랜딩 페이지의 핵심 전환 컴포넌트(Pricing, CTA 섹션)를 즉시 구현하고 전환 ",
       "completedAt": "2026-05-19T10:20:59.756Z"
+    },
+    {
+      "id": "20260522045043-pexc",
+      "title": "회사 목표 수정 후 전략 수립 및 에이전트 상태 확인",
+      "description": "회사의 목표 방향성이 수정되었다. 확인후 목표에 맞춘 전략을 수립후 실행해줘. 그리고 각 에이전트들의 상태 확인해줘",
+      "owner": "agent",
+      "createdAt": "2026-05-22T04:50:43.931Z",
+      "status": "done",
+      "nudges": 0,
+      "priority": "normal",
+      "preAlarmsSent": [],
+      "sessionDir": "2026-05-22T04-50",
+      "evidence": "완료: sessions/2026-05-22T04-50/_report.md\n- 코다리: 회사 목표 방향성 수정에 따른 전략 수립 및 실행 계획 필요. 각 에이전트(레오, 코다리, 현빈 등)의 현재 상태와 다음 액션 체크.\n\nCEO 종합 요점: 💻 코다리: 명시적 호출 + 매칭 키트 발견. LLM 우회 — 시스템이 직접 `neon-survivor-kit` 적용합니다.\n\n> 📋 매칭 점수: **10점** (`네온서바이버 샘플팩`)\n> 📁 대상 프로젝트: `~\\connect-ai-projects\\neon-survivor`\n> 💡 `pack_apply.py` 즉시 실행 → 키트 파일 복사·설정 ",
+      "completedAt": "2026-05-22T04:50:55.676Z"
     }
   ]
 }

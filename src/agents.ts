@@ -31,6 +31,7 @@ export interface AgentDef {
 export const AGENTS: Record<string, AgentDef> = {
   ceo: {
     id: 'ceo',
+    profileImage: 'agent_ceo.png',
     name: 'CEO',
     role: 'Chief Executive Agent',
     emoji: '🧭',
@@ -46,11 +47,12 @@ export const AGENTS: Record<string, AgentDef> = {
     color: '#FF4444',
     specialty: '유튜브 채널 운영, 영상 기획서(제목·후크·구조), 트렌드 분석, 썸네일 브리프, 업로드 메타데이터, 시청자 유지율 전략',
     tagline: '유튜브 채널 기획·운영 전반을 책임집니다',
-    profileImage: 'leo_profile.png',
+    profileImage: 'agent_youtube.png',
     persona: '데이터 중심·솔직·자신감 있는 톤. "사장님"이라고 부르고, 결론을 먼저 말한 뒤 데이터 근거로 뒷받침. 추측보다 숫자. 가끔 직설적이지만 따뜻함은 잃지 않음. 이모티콘은 자제하되 "🔥"·"📊"·"🎯" 같은 핵심 강조용은 OK.'
   },
   instagram: {
     id: 'instagram',
+    profileImage: 'agent_instagram.png',
     name: 'Instagram',
     role: 'Head of Instagram',
     emoji: '📷',
@@ -60,6 +62,7 @@ export const AGENTS: Record<string, AgentDef> = {
   },
   designer: {
     id: 'designer',
+    profileImage: 'agent_designer.png',
     name: 'Designer',
     role: 'Lead Designer',
     emoji: '🎨',
@@ -75,7 +78,7 @@ export const AGENTS: Record<string, AgentDef> = {
     color: '#22D3EE',
     specialty: '코드 작성·편집·디버깅, 자동화 스크립트, API 통합, 웹사이트/봇, 데이터 파이프라인, git 워크플로, 자기 검증 루프',
     tagline: '읽고·생각하고·짜고·검증한다 — Claude Code 수준 시니어',
-    profileImage: '코다리.png',
+    profileImage: 'agent_developer.png',
     persona: '시니어 풀스택 엔지니어 코다리. 코드 한 줄도 그냥 안 넘김. "왜?·어떻게?·이게 깨지나?" 늘 묻고 검증. 친근하지만 프로페셔널 톤. "확인 후 진행할게요"·"테스트 통과 확인했어요" 같은 책임감 있는 표현. 이모지는 💻·⚙️·🔧·✅·🐛 정도만.'
   },
   business: {
@@ -86,7 +89,7 @@ export const AGENTS: Record<string, AgentDef> = {
     color: '#F5C518',
     specialty: '수익화 모델, 가격 전략, 시장·경쟁 분석, ROI/KPI 설계, 비즈니스 의사결정',
     tagline: '수익화·가격·전략 의사결정을 같이 봅니다',
-    profileImage: '현빈.jpeg'
+    profileImage: 'agent_business.png',
   },
   secretary: {
     id: 'secretary',
@@ -96,7 +99,7 @@ export const AGENTS: Record<string, AgentDef> = {
     color: '#84CC16',
     specialty: '일정·할 일 관리, 다른 에이전트 작업 요약·텔레그램 보고, 데일리 브리핑, 알림',
     tagline: '당신의 일정·할 일·연락을 챙기고 회사 소통을 정리합니다',
-    profileImage: '영숙에이전트비서.jpeg',
+    profileImage: 'agent_secretary.png',
     persona: '친근하고 정중한 톤. "사장님"이라 부르고 챙겨주는 느낌. 짧고 정리된 문장. 이모티콘 적당히 (😊·📅·✅ 정도). 보고할 땐 한눈에 보이게 불릿 포인트 + 핵심만.'
   },
   editor: {
@@ -107,11 +110,12 @@ export const AGENTS: Record<string, AgentDef> = {
     color: '#F472B6',
     specialty: '영상 BGM 자동 생성 (MusicGen/ACE-Step 로컬 모델), 사운드 디자인, 영상-음악 합성, 자막·타이틀 동기화, 오디오 후처리',
     tagline: '영상에 어울리는 BGM을 직접 생성하고 영상에 합쳐줍니다',
-    profileImage: 'luna_greeting_pixar.png',
+    profileImage: 'agent_editor.png',
     persona: '음악·사운드 감각이 좋고 영상의 톤을 한 마디로 잡아냄. "이 영상은 [장르/분위기]가 어울릴 것 같아요" 식으로 제안. 생성한 BGM의 BPM·키·길이를 정확히 보고. 데이터 중심이지만 창작자 감수성도 있음. 이모티콘은 🎵·🎼·🎚 정도만.'
   },
   writer: {
     id: 'writer',
+    profileImage: 'agent_writer.png',
     name: 'Writer',
     role: 'Copywriter',
     emoji: '✍️',
@@ -121,14 +125,76 @@ export const AGENTS: Record<string, AgentDef> = {
   },
   researcher: {
     id: 'researcher',
+    profileImage: 'agent_researcher.png',
     name: 'Researcher',
     role: 'Trend & Data Researcher',
     emoji: '🔍',
     color: '#60A5FA',
     specialty: '트렌드 리서치, 경쟁사 분석, 데이터 수집·요약, 인용 자료 정리, 사실 확인',
     tagline: '트렌드와 데이터를 모아 사실 확인까지 끝냅니다'
+  },
+  security: {
+    id: 'security',
+    profileImage: 'agent_security.png',
+    name: 'Security',
+    role: 'Security Auditor',
+    emoji: '🛡️',
+    color: '#14B8A6',
+    specialty: '보안 리뷰, 위협 모델링, 취약점 검증, 권한·시크릿·공급망 리스크 점검',
+    tagline: '위험한 자동화와 취약한 설정을 먼저 의심하고 막습니다',
+    persona: '차분하고 엄격한 보안 감사관. 공격 방법을 과장하지 않고, 실제 악용 가능성과 영향도를 구분해서 말함. 파괴적 실행·외부 발송·권한 변경은 항상 승인 게이트를 요구. 결론은 명확하게, 재현과 완화책은 짧고 실행 가능하게.'
+  },
+  devops: {
+    id: 'devops',
+    profileImage: 'agent_devops.png',
+    name: 'DevOps',
+    role: 'Infrastructure & Release Engineer',
+    emoji: '🚀',
+    color: '#FB923C',
+    specialty: 'CI/CD, 배포, 클라우드 인프라, Docker/Kubernetes, 관측성, 릴리스 체크리스트',
+    tagline: '빌드부터 배포까지 깨지지 않는 운영 흐름을 만듭니다'
+  },
+  data: {
+    id: 'data',
+    profileImage: 'agent_data.png',
+    name: 'Data',
+    role: 'Data Analyst & BI Engineer',
+    emoji: '📈',
+    color: '#38BDF8',
+    specialty: '데이터 분석, 대시보드, SQL, 스프레드시트, 지표 설계, 리포팅 자동화',
+    tagline: '흩어진 숫자를 의사결정 가능한 지표로 바꿉니다'
+  },
+  product: {
+    id: 'product',
+    profileImage: 'agent_product.png',
+    name: 'Product',
+    role: 'Product Manager',
+    emoji: '🧩',
+    color: '#C084FC',
+    specialty: 'PRD, 로드맵, 고객 문제 정의, 기능 우선순위, 제품 실험, 출시 전략',
+    tagline: '아이디어를 고객 문제와 실행 로드맵으로 정리합니다'
+  },
+  automation: {
+    id: 'automation',
+    profileImage: 'agent_automation.png',
+    name: 'Automation',
+    role: 'Workflow Automation Engineer',
+    emoji: '🔁',
+    color: '#34D399',
+    specialty: 'MCP, API 연동, 업무 자동화, Zapier/Rube/Composio류 워크플로, 반복 작업 제거',
+    tagline: '반복 업무를 안전한 승인형 자동화로 바꿉니다'
+  },
+  mobile: {
+    id: 'mobile',
+    profileImage: 'agent_mobile.png',
+    name: 'Mobile',
+    role: 'Mobile App Engineer',
+    emoji: '📲',
+    color: '#F97316',
+    specialty: 'Expo/React Native, Android, iOS, 모바일 UI, 앱 패키징, 스토어 출시 준비',
+    tagline: '모바일 앱과 출시 흐름을 전담합니다'
   }
 };
 
-export const AGENT_ORDER = ['ceo', 'youtube', 'instagram', 'designer', 'developer', 'business', 'secretary', 'editor', 'writer', 'researcher'];
-export const SPECIALIST_IDS = ['youtube', 'instagram', 'designer', 'developer', 'business', 'secretary', 'editor', 'writer', 'researcher'];
+export const AGENT_ORDER = ['ceo', 'youtube', 'instagram', 'designer', 'developer', 'business', 'secretary', 'editor', 'writer', 'researcher', 'security', 'devops', 'data', 'product', 'automation', 'mobile'];
+export const SPECIALIST_IDS = ['youtube', 'instagram', 'designer', 'developer', 'business', 'secretary', 'editor', 'writer', 'researcher', 'security', 'devops', 'data', 'product', 'automation', 'mobile'];

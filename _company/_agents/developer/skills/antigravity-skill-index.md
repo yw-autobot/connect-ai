@@ -1,0 +1,134 @@
+# Antigravity Awesome Skills Index - developer
+
+Source: `_company/_shared/vendor/antigravity-awesome-skills`
+Assigned skills: 328
+
+This file is an agent-local routing index. Full skill bodies remain in the shared vendor folder to avoid duplicating 19k files per agent.
+
+| Skill | Category | Risk | Path | Description |
+| --- | --- | --- | --- | --- |
+| `hosted-agents` | ai-agents | unknown | `skills/hosted-agents` | Build background agents in sandboxed environments. Use for hosted coding agents, sandboxed VMs, Modal sandboxes, and remote coding environments. |
+| `langgraph` | ai-agents | unknown | `skills/langgraph` | Expert in LangGraph - the production-grade framework for building stateful, multi-actor AI applications. Covers graph construction, state management, cycles and |
+| `mcp-builder-ms` | ai-agents | unknown | `skills/mcp-builder-ms` | Use this skill when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK). |
+| `agent-framework-azure-ai-py` | ai-ml | unknown | `skills/agent-framework-azure-ai-py` | Build persistent agents on Azure AI Foundry using the Microsoft Agent Framework Python SDK. |
+| `agentphone` | ai-ml | critical | `skills/agentphone` | Build AI phone agents with AgentPhone API. Use when the user wants to make phone calls, send/receive SMS, manage phone numbers, create voice agents, set up webh |
+| `ai-md` | ai-ml | safe | `skills/ai-md` | Convert human-written CLAUDE.md into AI-native structured-label format. Battle-tested across 4 models. Same rules, fewer tokens, higher compliance. |
+| `ai-native-cli` | ai-ml | safe | `skills/ai-native-cli` | Design spec with 98 rules for building CLI tools that AI agents can safely use. Covers structured JSON output, error handling, input contracts, safety guardrail |
+| `ai-product` | ai-ml | safe | `skills/ai-product` | Every product will be AI-powered. The question is whether you'll build it right or ship a demo that falls apart in production. |
+| `ai-wrapper-product` | ai-ml | unknown | `skills/ai-wrapper-product` | Expert in building products that wrap AI APIs (OpenAI, Anthropic, etc. ) into focused tools people will pay for. Not just "ChatGPT but different" - products tha |
+| `autonomous-agent-patterns` | ai-ml | critical | `skills/autonomous-agent-patterns` | Design patterns for building autonomous coding agents, inspired by [Cline](https://github.com/cline/cline) and [OpenAI Codex](https://github.com/openai/codex). |
+| `claude-api` | ai-ml | unknown | `skills/claude-api` | Build apps with the Claude API or Anthropic SDK. TRIGGER when: code imports `anthropic`/`@anthropic-ai/sdk`/`claude_agent_sdk`, or user asks to use Claude API,  |
+| `claude-code-guide` | ai-ml | unknown | `skills/claude-code-guide` | To provide a comprehensive reference for configuring and using Claude Code (the agentic coding tool) to its full potential. This skill synthesizes best practice |
+| `claude-monitor` | ai-ml | safe | `skills/claude-monitor` | Monitor de performance do Claude Code e sistema local. Diagnostica lentidao, mede CPU/RAM/disco, verifica API latency e gera relatorios de saude do sistema. |
+| `claude-settings-audit` | ai-ml | unknown | `skills/claude-settings-audit` | Analyze a repository to generate recommended Claude Code settings.json permissions. Use when setting up a new project, auditing existing settings, or determinin |
+| `context-driven-development` | ai-ml | unknown | `skills/context-driven-development` | Guide for implementing and maintaining context as a managed artifact alongside code, enabling consistent AI interactions and team alignment through structured p |
+| `ejentum-reasoning-harness` | ai-ml | critical | `skills/ejentum-reasoning-harness` | MCP server exposing four cognitive harness modes (reasoning, code, anti-deception, memory). Each call returns an engineered scaffold (failure pattern, procedure |
+| `evaluation` | ai-ml | safe | `skills/evaluation` | Build evaluation frameworks for agent systems. Use when testing agent performance systematically, validating context engineering choices, or measuring improveme |
+| `fal-platform` | ai-ml | safe | `skills/fal-platform` | Platform APIs for model management, pricing, and usage tracking |
+| `gemini-api-dev` | ai-ml | unknown | `skills/gemini-api-dev` | The Gemini API provides access to Google's most advanced AI models. Key capabilities include: |
+| `hugging-face-dataset-viewer` | ai-ml | unknown | `skills/hugging-face-dataset-viewer` | Query Hugging Face datasets through the Dataset Viewer API for splits, rows, search, filters, and parquet links. |
+| `hugging-face-gradio` | ai-ml | unknown | `skills/hugging-face-gradio` | Build or edit Gradio apps, layouts, components, and chat interfaces in Python. |
+| `hugging-face-papers` | ai-ml | unknown | `skills/hugging-face-papers` | Read and analyze Hugging Face paper pages or arXiv papers with markdown and papers API metadata. |
+| `hugging-face-tool-builder` | ai-ml | unknown | `skills/hugging-face-tool-builder` | Your purpose is now is to create reusable command line scripts and utilities for using the Hugging Face API, allowing chaining, piping and intermediate processi |
+| `hugging-face-trackio` | ai-ml | unknown | `skills/hugging-face-trackio` | Track ML experiments with Trackio using Python logging, alerts, and CLI metric retrieval. |
+| `hybrid-search-implementation` | ai-ml | safe | `skills/hybrid-search-implementation` | Combine vector and keyword search for improved retrieval. Use when implementing RAG systems, building search engines, or when neither approach alone provides su |
+| `llm-evaluation` | ai-ml | unknown | `skills/llm-evaluation` | Master comprehensive evaluation strategies for LLM applications, from automated metrics to human evaluation and A/B testing. |
+| `llm-structured-output` | ai-ml | safe | `skills/llm-structured-output` | Get reliable JSON, enums, and typed objects from LLMs using response_format, tool_use, and schema-constrained decoding across OpenAI, Anthropic, and Google APIs |
+| `m365-agents-py` | ai-ml | unknown | `skills/m365-agents-py` | Microsoft 365 Agents SDK for Python. Build multichannel agents for Teams/M365/Copilot Studio with aiohttp hosting, AgentApplication routing, streaming responses |
+| `ml-engineer` | ai-ml | unknown | `skills/ml-engineer` | Build production ML systems with PyTorch 2.x, TensorFlow, and modern ML frameworks. Implements model serving, feature engineering, A/B testing, and monitoring. |
+| `mlops-engineer` | ai-ml | unknown | `skills/mlops-engineer` | Build comprehensive ML pipelines, experiment tracking, and model registries with MLflow, Kubeflow, and modern MLOps tools. |
+| `tool-design` | ai-ml | safe | `skills/tool-design` | Build tools that agents can use effectively, including architectural reduction patterns. Use when creating new tools for agent systems, debugging tool-related f |
+| `bdistill-behavioral-xray` | ai-testing | safe | `skills/bdistill-behavioral-xray` | X-ray any AI model's behavioral patterns — refusal boundaries, hallucination tendencies, reasoning style, formatting defaults. No API key needed. |
+| `hubspot-integration` | api-integration | unknown | `skills/hubspot-integration` | Expert patterns for HubSpot CRM integration including OAuth authentication, CRM objects, associations, batch operations, webhooks, and custom objects. Covers No |
+| `moodle-external-api-development` | api-integration | unknown | `skills/moodle-external-api-development` | This skill guides you through creating custom external web service APIs for Moodle LMS, following Moodle's external API framework and coding standards. |
+| `openapi-spec-generation` | api-integration | safe | `skills/openapi-spec-generation` | Generate and maintain OpenAPI 3.1 specifications from code, design-first specs, and validation patterns. Use when creating API documentation, generating SDKs, o |
+| `salesforce-development` | api-integration | safe | `skills/salesforce-development` | Expert patterns for Salesforce platform development including Lightning Web Components (LWC), Apex triggers and classes, REST/Bulk APIs, Connected Apps, and Sal |
+| `shopify-development` | api-integration | unknown | `skills/shopify-development` | Build Shopify apps, extensions, themes using GraphQL Admin API, Shopify CLI, Polaris UI, and Liquid. |
+| `slack-bot-builder` | api-integration | unknown | `skills/slack-bot-builder` | Build Slack apps using the Bolt framework across Python, JavaScript, and Java. Covers Block Kit for rich UIs, interactive components, slash commands, event hand |
+| `twilio-communications` | api-integration | unknown | `skills/twilio-communications` | Build communication features with Twilio: SMS messaging, voice calls, WhatsApp Business API, and user verification (2FA). Covers the full spectrum from simple n |
+| `fastapi-templates` | app-builder | unknown | `skills/fastapi-templates` | Create production-ready FastAPI projects with async patterns, dependency injection, and comprehensive error handling. Use when building new FastAPI applications |
+| `frontend-mobile-development-component-scaffold` | app-builder | unknown | `skills/frontend-mobile-development-component-scaffold` | You are a React component architecture expert specializing in scaffolding production-ready, accessible, and performant components. Generate complete component i |
+| `javascript-typescript-typescript-scaffold` | app-builder | unknown | `skills/javascript-typescript-typescript-scaffold` | You are a TypeScript project architecture expert specializing in scaffolding production-ready Node.js and frontend applications. Generate complete project struc |
+| `templates` | app-builder | unknown | `skills/app-builder/templates` | Project scaffolding templates for new applications. Use when creating new projects from scratch. Contains 12 templates for various tech stacks. |
+| `api-design-principles` | backend | safe | `skills/api-design-principles` | Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers and stand the test of time. |
+| `api-documentation-generator` | backend | unknown | `skills/api-documentation-generator` | Generate comprehensive, developer-friendly API documentation from code, including endpoints, parameters, examples, and best practices |
+| `api-documenter` | backend | unknown | `skills/api-documenter` | Master API documentation with OpenAPI 3.1, AI-powered tools, and modern developer experience practices. Create interactive docs, generate SDKs, and build compre |
+| `api-fuzzing-bug-bounty` | backend | offensive | `skills/api-fuzzing-bug-bounty` | Provide comprehensive techniques for testing REST, SOAP, and GraphQL APIs during bug bounty hunting and penetration testing engagements. Covers vulnerability di |
+| `api-patterns` | backend | unknown | `skills/api-patterns` | API design principles and decision-making. REST vs GraphQL vs tRPC selection, response formats, versioning, pagination. |
+| `api-security-best-practices` | backend | unknown | `skills/api-security-best-practices` | Implement secure API design patterns including authentication, authorization, input validation, rate limiting, and protection against common API vulnerabilities |
+| `api-testing-observability-api-mock` | backend | unknown | `skills/api-testing-observability-api-mock` | You are an API mocking expert specializing in realistic mock services for development, testing, and demos. Design mocks that simulate real API behavior and enab |
+| `appdeploy` | backend | safe | `skills/appdeploy` | Deploy web apps with backend APIs, database, and file storage. Use when the user asks to deploy or publish a website or web app and wants a public URL. Uses HTT |
+| `backend-architect` | backend | unknown | `skills/backend-architect` | Expert backend architect specializing in scalable API design, microservices architecture, and distributed systems. |
+| `backend-dev-guidelines` | backend | unknown | `skills/backend-dev-guidelines` | You are a senior backend engineer operating production-grade services under strict architectural and reliability constraints. Use when routes, controllers, serv |
+| `backend-development-feature-development` | backend | unknown | `skills/backend-development-feature-development` | Orchestrate end-to-end backend feature development from requirements to deployment. Use when coordinating multi-phase feature delivery across teams and services |
+| `backend-security-coder` | backend | unknown | `skills/backend-security-coder` | Expert in secure backend coding practices specializing in input validation, authentication, and API security. Use PROACTIVELY for backend security implementatio |
+| `comfyui-gateway` | backend | safe | `skills/comfyui-gateway` | REST API gateway for ComfyUI servers. Workflow management, job queuing, webhooks, caching, auth, rate limiting, and image delivery (URL + base64). |
+| `copilot-sdk` | backend | unknown | `skills/copilot-sdk` | Build applications that programmatically interact with GitHub Copilot. The SDK wraps the Copilot CLI via JSON-RPC, providing session management, custom tools, h |
+| `django-access-review` | backend | unknown | `skills/django-access-review` | django-access-review |
+| `django-perf-review` | backend | unknown | `skills/django-perf-review` | Django performance code review. Use when asked to "review Django performance", "find N+1 queries", "optimize Django", "check queryset performance", "database pe |
+| `dotnet-backend` | backend | safe | `skills/dotnet-backend` | Build ASP.NET Core 8+ backend services with EF Core, auth, background jobs, and production API patterns. |
+| `dotnet-backend-patterns` | backend | safe | `skills/dotnet-backend-patterns` | Master C#/.NET patterns for building production-grade APIs, MCP servers, and enterprise backends with modern best practices (2024/2025). |
+| `fastapi-router-py` | backend | unknown | `skills/fastapi-router-py` | Create FastAPI routers following established patterns with proper authentication, response models, and HTTP status codes. |
+| `graphql` | backend | safe | `skills/graphql` | GraphQL gives clients exactly the data they need - no more, no less. One endpoint, typed schema, introspection. But the flexibility that makes it powerful also  |
+| `hono` | backend | safe | `skills/hono` | Build ultra-fast web APIs and full-stack apps with Hono — runs on Cloudflare Workers, Deno, Bun, Node.js, and any WinterCG-compatible runtime. |
+| `junta-leiloeiros` | backend | safe | `skills/junta-leiloeiros` | Coleta e consulta dados de leiloeiros oficiais de todas as 27 Juntas Comerciais do Brasil. Scraper multi-UF, banco SQLite, API FastAPI e exportacao CSV/JSON. |
+| `nodejs-backend-patterns` | backend | safe | `skills/nodejs-backend-patterns` | Comprehensive guidance for building scalable, maintainable, and production-ready Node.js backend applications with modern frameworks, architectural patterns, an |
+| `pubmed-database` | backend | unknown | `skills/pubmed-database` | Direct REST API access to PubMed. Advanced Boolean/MeSH queries, E-utilities API, batch processing, citation management. For Python workflows, prefer biopython  |
+| `telegram` | backend | critical | `skills/telegram` | Integracao completa com Telegram Bot API. Setup com BotFather, mensagens, webhooks, inline keyboards, grupos, canais. Boilerplates Node.js e Python. |
+| `uniprot-database` | backend | safe | `skills/uniprot-database` | Direct REST API access to UniProt. Protein searches, FASTA retrieval, ID mapping, Swiss-Prot/TrEMBL. For Python workflows with multiple databases, prefer bioser |
+| `whatsapp-cloud-api` | backend | critical | `skills/whatsapp-cloud-api` | Integracao com WhatsApp Business Cloud API (Meta). Mensagens, templates, webhooks HMAC-SHA256, automacao de atendimento. Boilerplates Node.js e Python. |
+| `x402-express-wrapper` | backend | critical | `skills/x402-express-wrapper` | Wrapper oficial de M2MCent (Node.js) para inyectar muros de pago x402 en APIs o servidores Model Context Protocol (MCP). Usar al construir nuevos servicios que  |
+| `blockchain-developer` | blockchain | unknown | `skills/blockchain-developer` | Build production-ready Web3 applications, smart contracts, and decentralized systems. Implements DeFi protocols, NFT platforms, DAOs, and enterprise blockchain  |
+| `web3-testing` | blockchain | unknown | `skills/web3-testing` | Master comprehensive testing strategies for smart contracts using Hardhat, Foundry, and advanced testing patterns. |
+| `c-pro` | code | unknown | `skills/c-pro` | Write efficient C code with proper memory management, pointer |
+| `cpp-pro` | code | unknown | `skills/cpp-pro` | Write idiomatic C++ code with modern features, RAII, smart pointers, and STL algorithms. Handles templates, move semantics, and performance optimization. |
+| `csharp-pro` | code | unknown | `skills/csharp-pro` | Write modern C# code with advanced features like records, pattern matching, and async/await. Optimizes .NET applications, implements enterprise patterns, and en |
+| `elixir-pro` | code | unknown | `skills/elixir-pro` | Write idiomatic Elixir code with OTP patterns, supervision trees, and Phoenix LiveView. Masters concurrency, fault tolerance, and distributed systems. |
+| `golang-pro` | code | unknown | `skills/golang-pro` | Master Go 1.21+ with modern patterns, advanced concurrency, performance optimization, and production-ready microservices. |
+| `haskell-pro` | code | safe | `skills/haskell-pro` | Expert Haskell engineer specializing in advanced type systems, pure |
+| `java-pro` | code | unknown | `skills/java-pro` | Master Java 21+ with modern features like virtual threads, pattern matching, and Spring Boot 3.x. Expert in the latest Java ecosystem including GraalVM, Project |
+| `javascript-pro` | code | safe | `skills/javascript-pro` | Master modern JavaScript with ES6+, async patterns, and Node.js APIs. Handles promises, event loops, and browser/Node compatibility. |
+| `julia-pro` | code | unknown | `skills/julia-pro` | Master Julia 1.10+ with modern features, performance optimization, multiple dispatch, and production-ready practices. |
+| `php-pro` | code | unknown | `skills/php-pro` | Write idiomatic PHP code with generators, iterators, SPL data
+structures, and modern OOP features. Use PROACTIVELY for high-performance PHP
+applications.
+ |
+| `python-pro` | code | unknown | `skills/python-pro` | Master Python 3.12+ with modern features, async programming, performance optimization, and production-ready practices. Expert in the latest Python ecosystem inc |
+| `ruby-pro` | code | unknown | `skills/ruby-pro` | Write idiomatic Ruby code with metaprogramming, Rails patterns, and performance optimization. Specializes in Ruby on Rails, gem development, and testing framewo |
+| `rust-pro` | code | unknown | `skills/rust-pro` | Master Rust 1.75+ with modern async patterns, advanced type system features, and production-ready systems programming. |
+| `sankhya-dashboard-html-jsp-custom-best-pratices` | code | safe | `skills/sankhya-dashboard-html-jsp-custom-best-pratices` | This skill should be used when the user asks for patterns, best practices, creation, or fixing of Sankhya dashboards using HTML, JSP, Java, and SQL. |
+| `scala-pro` | code | safe | `skills/scala-pro` | Master enterprise-grade Scala development with functional programming, distributed systems, and big data processing. Expert in Apache Pekko, Akka, Spark, ZIO/Ca |
+| `typescript-advanced-types` | code | safe | `skills/typescript-advanced-types` | Comprehensive guidance for mastering TypeScript's advanced type system including generics, conditional types, mapped types, template literal types, and utility  |
+| `typescript-pro` | code | safe | `skills/typescript-pro` | Master TypeScript with advanced types, generics, and strict type safety. Handles complex type systems, decorators, and enterprise-grade patterns. |
+| `unreal-engine-cpp-pro` | code | safe | `skills/unreal-engine-cpp-pro` | Expert guide for Unreal Engine 5.x C++ development, covering UObject hygiene, performance patterns, and best practices. |
+| `clean-code` | code-quality | safe | `skills/clean-code` | This skill embodies the principles of "Clean Code" by Robert C. Martin (Uncle Bob). Use it to transform "code that works" into "code that is clean." |
+| `code-refactoring-refactor-clean` | code-quality | unknown | `skills/code-refactoring-refactor-clean` | You are a code refactoring expert specializing in clean code principles, SOLID design patterns, and modern software engineering best practices. Analyze and refa |
+| `code-review-checklist` | code-quality | unknown | `skills/code-review-checklist` | Comprehensive checklist for conducting thorough code reviews covering functionality, security, performance, and maintainability |
+| `codebase-cleanup-tech-debt` | code-quality | unknown | `skills/codebase-cleanup-tech-debt` | You are a technical debt expert specializing in identifying, quantifying, and prioritizing technical debt in software projects. Analyze the codebase to uncover  |
+| `codex-review` | code-quality | unknown | `skills/codex-review` | Professional code review with auto CHANGELOG generation, integrated with Codex AI. Use when you want professional code review before commits, you need automatic |
+| `comprehensive-review-full-review` | code-quality | unknown | `skills/comprehensive-review-full-review` | Use when working with comprehensive review full review |
+| `comprehensive-review-pr-enhance` | code-quality | unknown | `skills/comprehensive-review-pr-enhance` | Generate structured PR descriptions from diffs, add review checklists, risk assessments, and test coverage summaries. Use when the user says "write a PR descrip |
+| `fix-review` | code-quality | safe | `skills/fix-review` | Verify fix commits address audit findings without new bugs |
+| `kaizen` | code-quality | unknown | `skills/kaizen` | Guide for continuous improvement, error proofing, and standardization. Use this skill when the user wants to improve code quality, refactor, or discuss process  |
+| `shellcheck-configuration` | code-quality | unknown | `skills/shellcheck-configuration` | Master ShellCheck static analysis configuration and usage for shell script quality. Use when setting up linting infrastructure, fixing code issues, or ensuring  |
+| `uncle-bob-craft` | code-quality | safe | `skills/uncle-bob-craft` | Use when performing code review, writing or refactoring code, or discussing architecture; complements clean-code and does not replace project linter/formatter. |
+| `vibe-code-auditor` | code-quality | safe | `skills/vibe-code-auditor` | Audit rapidly generated or AI-produced code for structural flaws, fragility, and production risks. |
+| `vibers-code-review` | code-quality | critical | `skills/vibers-code-review` | Human review workflow for AI-generated GitHub projects with spec-based feedback, security review, and follow-up PRs from the Vibers service. |
+| `faf-expert` | coding | safe | `skills/faf-expert` | Advanced .faf (Foundational AI-context Format) specialist. IANA-registered format, MCP server config, championship scoring, bi-directional sync. |
+| `vscode-extension-guide-en` | core-dev | safe | `skills/vscode-extension-guide-en` | Guide for VS Code extension development from scaffolding to Marketplace publication |
+| `llm-app-patterns` | data-ai | unknown | `skills/llm-app-patterns` | Production-ready patterns for building LLM applications, inspired by [Dify](https://github.com/langgenius/dify) and industry best practices. |
+| `recsys-pipeline-architect` | data-ai | safe | `skills/recsys-pipeline-architect` | Designs composable recommendation, ranking, and feed pipelines using the six-stage Source→Hydrator→Filter→Scorer→Selector→SideEffect framework |
+| `tavily-web` | data-ai | unknown | `skills/tavily-web` | Web search, content extraction, crawling, and research capabilities using Tavily API. Use when you need to search the web for current information, extracting co |
+| `data-engineering-data-driven-feature` | data-science | unknown | `skills/data-engineering-data-driven-feature` | Build features guided by data insights, A/B testing, and continuous measurement using specialized agents for analysis, implementation, and experimentation. |
+| `data-quality-frameworks` | data-science | unknown | `skills/data-quality-frameworks` | Implement data quality validation with Great Expectations, dbt tests, and data contracts. Use when building data quality pipelines, implementing validation rule |
+| `data-structure-protocol` | data-science | safe | `skills/data-structure-protocol` | Give agents persistent structural memory of a codebase — navigate dependencies, track public APIs, and understand why connections exist without re-reading the w |
+| `mcp-tool-developer` | developer-tools | safe | `skills/mcp-tool-developer` | Build Model Context Protocol (MCP) servers and tools from scratch. Full-stack MCP development with TypeScript/Python, testing, deployment, and registry publishi |
+| `tokenwise` | developer-tools | critical | `skills/tokenwise` | Measurement-driven model router for Claude Code. Routes Haiku/Sonnet/Opus per task class, logs every routed task with real $ numbers, and A/B tests cheaper tier |
+| `api-endpoint-builder` | development | safe | `skills/api-endpoint-builder` | Builds production-ready REST API endpoints with validation, error handling, authentication, and documentation. Follows best practices for security and scalabili |
+| `arm-cortex-expert` | development | unknown | `skills/arm-cortex-expert` | Senior embedded software engineer specializing in firmware and driver development for ARM Cortex-M microcontrollers (Teensy, STM32, nRF52, SAMD). |
+| `async-python-patterns` | development | safe | `skills/async-python-patterns` | Comprehensive guidance for implementing asynchronous Python applications using asyncio, concurrent programming patterns, and async/await for building high-perfo |
+| `bazel-build-optimization` | development | unknown | `skills/bazel-build-optimization` | Optimize Bazel builds for large-scale monorepos. Use when configuring Bazel, implementing remote execution, or optimizing build performance for enterprise codeb |
+| `brooks-lint` | development | safe | `skills/brooks-lint` | AI code reviewer grounded in classic software engineering books for catching design smells, coupling issues, and architectural risks. |
+| `busybox-on-windows` | development | safe | `skills/busybox-on-windows` | How to use a Win32 build of BusyBox to run many of the standard UNIX command line tools on Windows. |
+
+Showing first 120. Full assignment is in `_company/_shared/antigravity_skill_agent_map.json`.

@@ -2418,7 +2418,7 @@ function setDockOpen(open){
   const isOpen = !!open;
   dock.dataset.open = isOpen ? 'true' : 'false';
   chip.dataset.expanded = isOpen ? 'true' : 'false';
-  chip.title = isOpen ? '클릭해서 닫기' : '9명 specialist 모델 매핑 — 클릭해서 펼치기';
+  chip.title = isOpen ? '클릭해서 닫기' : 'specialist 모델 매핑 — 클릭해서 펼치기';
   if (!isOpen) {
     try { closeDockPopover(); } catch {}
   }
@@ -2537,7 +2537,7 @@ function openDockPopover(card, agentData, opts){
   const isAllMode = opts && opts.allMode;
   const headEmoji = isAllMode ? '🔁' : (agentData.emoji||'🤖');
   const headName = isAllMode ? '모든 specialist 같은 모델로' : (agentData.name || agentData.id);
-  const headRole = isAllMode ? '선택한 모델이 9명 모두에게 적용됩니다' : (agentData.role || '');
+  const headRole = isAllMode ? '선택한 모델이 모든 specialist에게 적용됩니다' : (agentData.role || '');
   pop.innerHTML = ''
     + '<div class="ad-popover-head">'
     +   '<div class="ph-emoji">' + headEmoji + '</div>'
@@ -2638,7 +2638,7 @@ function _wireDockActions(){
   const allBtn = document.getElementById('adAllBtn');
   const refreshBtn = document.getElementById('adRefreshBtn');
   if (autoBtn) autoBtn.addEventListener('click', ()=>{
-    if (!confirm('⚡ 자동 매핑\n\n시스템 사양과 설치된 모델을 보고 9명 specialist의 모델을 자동으로 분배합니다.\n(예: 작은 모델 → CEO·비서 · 큰 모델 → researcher·youtube 분석)\n\n현재 매핑이 덮어써집니다. 계속할까요?')) return;
+    if (!confirm('⚡ 자동 매핑\n\n시스템 사양과 설치된 모델을 보고 모든 specialist의 모델을 자동으로 분배합니다.\n(예: 작은 모델 → CEO·비서 · 큰 모델 → researcher·youtube 분석)\n\n현재 매핑이 덮어써집니다. 계속할까요?')) return;
     vscode.postMessage({type:'autoMapAgents'});
   });
   if (allBtn) allBtn.addEventListener('click', ()=>{
@@ -2646,7 +2646,7 @@ function _wireDockActions(){
     /* 가짜 agent 데이터로 popover 재사용 — "all 모드" 플래그만 켜서 한 모델 선택 시 모든 specialist에 적용 */
     const card = document.querySelector('.ag-card');
     const anchor = card || allBtn;
-    openDockPopover(anchor, { id:'__all__', name:'모든 specialist', emoji:'🔁', role:'선택한 모델이 9명 모두에게 적용됩니다', currentModel:'' }, { allMode:true });
+    openDockPopover(anchor, { id:'__all__', name:'모든 specialist', emoji:'🔁', role:'선택한 모델이 모든 specialist에게 적용됩니다', currentModel:'' }, { allMode:true });
   });
   if (refreshBtn) refreshBtn.addEventListener('click', ()=>{
     vscode.postMessage({type:'loadAgentDock'});
@@ -2717,7 +2717,11 @@ function addCorpBanner(text){
 /* All agents now live — Mission editing, Retrieval Strategy (Self-RAG /
    Graph RAG), agent memory, and brain context bridge all work agent-agnostic.
    YouTube has the deepest tool catalog; the others just show empty Skills. */
-const AGENT_LIVE = {ceo:true, youtube:true, instagram:true, designer:true, developer:true, business:true, secretary:true, editor:true, writer:true, researcher:true};
+const AGENT_LIVE = {
+  ceo:true, youtube:true, instagram:true, designer:true, developer:true,
+  business:true, secretary:true, editor:true, writer:true, researcher:true,
+  security:true, devops:true, data:true, product:true, automation:true, mobile:true
+};
 let _agentPanelOpen = false;
 let _agentPanelLoadHandler = null;
 let _toolConfigLoadHandler = null;
@@ -4311,8 +4315,8 @@ const LOCKED_AGENTS = { editor: true };  /* 사운드 디렉터(editor=루나) �
    - LOCKED (1명): Luna PIN
    첫 화면이 "비어 있지 않게" 하면서도 사용자 선택권 유지. */
 const ALWAYS_ON_AGENTS = new Set(['ceo']);
-const DEFAULT_ON_AGENTS = new Set(['secretary','youtube','writer','designer']);
-const OPTIONAL_AGENTS = new Set(['secretary','youtube','writer','designer','instagram','business','developer','researcher']);
+const DEFAULT_ON_AGENTS = new Set(['secretary','youtube','writer','designer','instagram','business','developer','researcher','security']);
+const OPTIONAL_AGENTS = new Set(['secretary','youtube','writer','designer','instagram','business','developer','researcher','security','devops','data','product','automation','mobile']);
 let _backendHiredAgents = null;  /* backend 동기화. null = 미수신 */
 let _backendActiveAgents = null;  /* v2.89.107 active.json 동기화 */
 
@@ -4934,7 +4938,7 @@ window.addEventListener('message',e=>{const msg=e.data;switch(msg.type){
          내려보세요" 만으로 무엇이 가능한지 모호했음. */
       const co = companyState.name || '회사';
       /* v2.89.110 — 기본 5명 ON + 옵션 4명 OFF + 루나 PIN. 사용자가 카드 클릭해서 자유롭게 변경 가능. */
-      addCorpBanner('✅ '+co+' 출범! 9명 팀 — 🟢 기본 ON 5명: 🧭 CEO · 📺 YouTube · 🎨 디자이너 · ✍️ 작가 · 📅 비서 (사용자가 OFF 가능) / ⏸ 옵션 4명 (📷 인스타·💼 비즈·🛠 개발·🔍 리서치): 카드 클릭해서 ON / 🔒 1명 (🎵 루나): 채용 PIN 필요');
+      addCorpBanner('✅ '+co+' 출범! 확장 팀 — 🟢 기본 ON: CEO · YouTube · 디자이너 · 작가 · 비서 · 핵심 운영 에이전트 / ⏸ 옵션 전문 에이전트: 카드 클릭해서 ON / 🔒 1명(루나): 채용 PIN 필요');
       addCorpBanner('💡 "다음 영상 컨셉 5개 뽑아줘" 처럼 자연어로 던지시면 CEO가 분배합니다.');
     }
     break;

@@ -882,10 +882,50 @@ const CUSTOM_MAP_DESKS: Record<string, DeskPos> = {
   researcher: { x: 33, y: 82 },
 };
 
+const CUSTOM_MAP_AUTO_DESKS: DeskPos[] = [
+  { x: 58, y: 43 }, { x: 64, y: 43 }, { x: 71, y: 43 }, { x: 77, y: 43 },
+  { x: 58, y: 58 }, { x: 64, y: 58 }, { x: 71, y: 58 }, { x: 77, y: 58 },
+  { x: 22, y: 66 }, { x: 28, y: 66 }, { x: 58, y: 73 }, { x: 66, y: 73 },
+  { x: 74, y: 73 }, { x: 83, y: 73 }, { x: 91, y: 73 }, { x: 91, y: 88 },
+];
+
+const OFFICE_AUTO_DESKS: AgentDeskRef[] = [
+  { building: 'office', localX: 18, localY: 30 },
+  { building: 'office', localX: 36, localY: 30 },
+  { building: 'office', localX: 54, localY: 30 },
+  { building: 'office', localX: 72, localY: 30 },
+  { building: 'office', localX: 90, localY: 30 },
+  { building: 'office', localX: 18, localY: 50 },
+  { building: 'office', localX: 36, localY: 50 },
+  { building: 'office', localX: 54, localY: 50 },
+  { building: 'office', localX: 72, localY: 50 },
+  { building: 'office', localX: 90, localY: 50 },
+  { building: 'office', localX: 18, localY: 70 },
+  { building: 'office', localX: 36, localY: 70 },
+  { building: 'office', localX: 54, localY: 70 },
+  { building: 'office', localX: 72, localY: 70 },
+  { building: 'office', localX: 90, localY: 70 },
+  { building: 'office', localX: 88, localY: 88 },
+];
+
 /** Convert each agent's building-local desk into world % coords. */
 function buildWorldDeskPositions(): Record<string, DeskPos> {
   const out: Record<string, DeskPos> = {};
   for (const [id, ref] of Object.entries(WORLD_LAYOUT.agents)) {
+    const b = WORLD_LAYOUT.buildings.find(bb => bb.id === ref.building);
+    if (!b) continue;
+    const worldPxX = b.x + (ref.localX / 100) * b.width;
+    const worldPxY = b.y + (ref.localY / 100) * b.height;
+    out[id] = {
+      x: (worldPxX / WORLD_LAYOUT.worldWidth) * 100,
+      y: (worldPxY / WORLD_LAYOUT.worldHeight) * 100,
+    };
+  }
+  let autoIndex = 0;
+  for (const id of AGENT_ORDER) {
+    if (out[id]) continue;
+    const ref = OFFICE_AUTO_DESKS[autoIndex % OFFICE_AUTO_DESKS.length];
+    autoIndex++;
     const b = WORLD_LAYOUT.buildings.find(bb => bb.id === ref.building);
     if (!b) continue;
     const worldPxX = b.x + (ref.localX / 100) * b.width;
@@ -1126,8 +1166,8 @@ const ALWAYS_ON_AGENTS: Set<string> = new Set(['ceo']);
 /* v2.89.156 — 데모용·신규 사용자 첫 경험 회복. "유튜브 + 매출 종합 보고서" 같은 합성 명령에서
    현빈(business) 가 비활성이라 조용히 drop 되던 사고 차단. 옵션 전체를 기본 ON 으로. Luna 만 LOCKED 유지.
    사용자는 언제든 직원 패널에서 개별 OFF 가능. */
-const DEFAULT_ON_AGENTS: Set<string> = new Set(['secretary', 'youtube', 'writer', 'designer', 'instagram', 'business', 'developer', 'researcher']);
-const OPTIONAL_AGENTS_DEFAULT: Set<string> = new Set(['secretary', 'youtube', 'writer', 'designer', 'instagram', 'business', 'developer', 'researcher']);
+const DEFAULT_ON_AGENTS: Set<string> = new Set(['secretary', 'youtube', 'writer', 'designer', 'instagram', 'business', 'developer', 'researcher', 'security']);
+const OPTIONAL_AGENTS_DEFAULT: Set<string> = new Set(['secretary', 'youtube', 'writer', 'designer', 'instagram', 'business', 'developer', 'researcher', 'security', 'devops', 'data', 'product', 'automation', 'mobile']);
 
 function _hiredJsonPath(): string {
   return path.join(getCompanyDir(), '_shared', 'hired.json');
@@ -1238,6 +1278,22 @@ function readActiveAgents(): Record<string, { activatedAt: string }> {
         }
       }
       data._migrated_v3 = true;
+      if (touched) {
+        try { fs.writeFileSync(p, JSON.stringify(data, null, 2)); } catch { /* ignore */ }
+      } else {
+        try { fs.writeFileSync(p, JSON.stringify(data, null, 2)); } catch { /* ignore */ }
+      }
+    }
+    /* v2.89.158 — Antigravity integration. Add the new read-only Security
+       specialist to existing workspaces automatically, while leaving the new
+       optional execution-heavy specialists user-controlled. */
+    if (data._migrated && !data._migrated_v4) {
+      let touched = false;
+      if (!data.security) {
+        data.security = { activatedAt: new Date().toISOString(), seeded_v4: true };
+        touched = true;
+      }
+      data._migrated_v4 = true;
       if (touched) {
         try { fs.writeFileSync(p, JSON.stringify(data, null, 2)); } catch { /* ignore */ }
       } else {
@@ -6585,6 +6641,46 @@ const AGENT_TOOLS_CATALOG: Record<string, { tool: string; desc: string; planned?
         { tool: 'web_search', desc: 'Brave/DuckDuckGo 검색 (Connected)', planned: true },
         { tool: 'page_fetcher', desc: '본문 추출 + 출처 인용', planned: true },
         { tool: 'monitor_daily', desc: '매일 내 분야 뉴스 → CEO 브리핑', planned: true }
+    ],
+    security: [
+        { tool: 'threat_model', desc: 'STRIDE/PASTA 기반 위협 모델과 신뢰 경계 정리' },
+        { tool: 'secret_scanner', desc: 'API 키·토큰·개인정보 노출 후보 탐지 (읽기 전용)' },
+        { tool: 'dependency_audit', desc: 'npm/pip 의존성 취약점과 공급망 리스크 점검' },
+        { tool: 'approval_policy_audit', desc: '삭제·배포·발송·권한 변경 액션의 승인 게이트 누락 점검' },
+        { tool: 'gated_fix', desc: '보안 수정 패치를 초안으로 만들고 승인 후 적용' }
+    ],
+    devops: [
+        { tool: 'ci_diagnose', desc: 'GitHub Actions/CI 실패 로그 수집과 원인 분류' },
+        { tool: 'deploy_plan', desc: 'Vercel/Netlify/Cloudflare 배포 전 체크리스트와 롤백 계획' },
+        { tool: 'docker_pack', desc: 'Dockerfile/compose 생성과 로컬 실행 검증' },
+        { tool: 'observability_check', desc: '로그·메트릭·알림·헬스체크 구성 점검' },
+        { tool: 'gated_deploy', desc: 'preview/dry-run 배포 우선, production 배포는 승인 게이트' }
+    ],
+    data: [
+        { tool: 'csv_profile', desc: 'CSV/XLSX 데이터 프로파일링과 품질 이슈 요약' },
+        { tool: 'metric_dashboard', desc: '핵심 KPI 대시보드 초안 생성' },
+        { tool: 'sql_review', desc: 'SQL 쿼리 성능·정확성 리뷰' },
+        { tool: 'report_generator', desc: '분석 결과를 CEO/Business용 리포트로 변환' },
+        { tool: 'web_research_api', desc: 'Tavily/Web Research API를 사용한 읽기 전용 검색·추출' }
+    ],
+    product: [
+        { tool: 'prd_writer', desc: '문제 정의·사용자 스토리·수용 기준 기반 PRD 작성' },
+        { tool: 'roadmap_prioritizer', desc: 'RICE/ICE 기준 기능 우선순위 산정' },
+        { tool: 'experiment_planner', desc: '제품 실험 가설·지표·기간·판정 기준 설계' },
+        { tool: 'launch_checklist', desc: '출시 전 제품·마케팅·지원 체크리스트' }
+    ],
+    automation: [
+        { tool: 'mcp_tool_builder', desc: '반복 업무를 MCP/API 도구 사양으로 변환' },
+        { tool: 'workflow_mapper', desc: '수동 업무 흐름을 승인형 자동화 단계로 분해' },
+        { tool: 'api_connector', desc: '외부 SaaS API 연동 설계와 인증 방식 점검' },
+        { tool: 'automation_risk_review', desc: '자동화의 발송·삭제·결제·권한 변경 리스크 검토' },
+        { tool: 'gated_external_action', desc: '외부 API 쓰기 작업을 dry-run으로 검토하고 승인 큐에 등록' }
+    ],
+    mobile: [
+        { tool: 'expo_scaffold', desc: 'Expo/React Native 앱 골격 생성' },
+        { tool: 'mobile_ui_review', desc: '모바일 화면 밀도·터치 타깃·접근성 점검' },
+        { tool: 'store_release_pack', desc: '앱스토어/플레이스토어 출시 메타데이터 준비' },
+        { tool: 'device_test_plan', desc: '기기별 테스트 매트릭스와 회귀 테스트 계획' }
     ]
 };
 
@@ -11143,6 +11239,16 @@ class CompanyDashboardPanel {
                         profileImageUri = this._panel.webview.asWebviewUri(p).toString();
                     }
                 }
+                if (!profileImageUri && _dashboardExtensionUri) {
+                    const bundled = vscode.Uri.joinPath(_dashboardExtensionUri, 'assets', 'pixel', 'characters', `${id}.png`);
+                    const fallbackIds = ['developer', 'business', 'designer', 'researcher', 'writer', 'editor', 'secretary', 'youtube', 'instagram', 'ceo'];
+                    const rosterIndex = Math.max(0, AGENT_ORDER.indexOf(id));
+                    const fallback = vscode.Uri.joinPath(_dashboardExtensionUri, 'assets', 'pixel', 'characters', `${fallbackIds[rosterIndex % fallbackIds.length]}.png`);
+                    const chosen = fs.existsSync(bundled.fsPath) ? bundled : (fs.existsSync(fallback.fsPath) ? fallback : null);
+                    if (chosen) {
+                        profileImageUri = this._panel.webview.asWebviewUri(chosen).toString();
+                    }
+                }
             } catch { /* ignore */ }
             const lvl = readToolAutonomyLevel(id);
             /* v2.87.7 — Pre-load lightweight skill list + verified count so the
@@ -11414,7 +11520,7 @@ class CompanyDashboardPanel {
   <section class="card span-12 hero-team" id="teamCard">
     <div class="card-head">
       <div class="card-title"><span class="title-icon">👥</span> 에이전트 매트릭스</div>
-      <span class="badge" id="teamBadge">10명</span>
+      <span class="badge" id="teamBadge">...</span>
     </div>
     <div class="team-legend">
       <span class="tl-chip tl-active" data-filter="all">전체 <span class="tl-count" id="tlAll">0</span></span>
@@ -11579,6 +11685,39 @@ interface ApiServiceDef {
     comingSoon?: boolean;
 }
 
+const API_SERVICE_TOOL_JSON: Record<string, { agentId: string; file: string; keyMap?: Record<string, string>; safety?: Record<string, any> }> = {
+    github: {
+        agentId: 'developer',
+        file: 'github_account.json',
+        safety: { REQUIRE_APPROVAL: true, DRY_RUN: true, ALLOW_DESTRUCTIVE: false },
+    },
+    instagram: {
+        agentId: 'instagram',
+        file: 'instagram_account.json',
+        safety: { REQUIRE_APPROVAL: true, DRY_RUN: true, ALLOW_PUBLISH: false, ALLOW_DM_SEND: false },
+    },
+    deployment: {
+        agentId: 'devops',
+        file: 'deployment_account.json',
+        safety: { REQUIRE_APPROVAL: true, DRY_RUN: true, ALLOW_PRODUCTION_DEPLOY: false, ALLOW_DNS_CHANGE: false },
+    },
+    rube: {
+        agentId: 'automation',
+        file: 'rube_account.json',
+        safety: { REQUIRE_APPROVAL: true, DRY_RUN: true, ALLOW_EXTERNAL_WRITE: false },
+    },
+    tavily: {
+        agentId: 'data',
+        file: 'tavily_account.json',
+        safety: { REQUIRE_APPROVAL: false, DRY_RUN: false, ALLOW_READ_ONLY_SEARCH: true },
+    },
+    security: {
+        agentId: 'security',
+        file: 'security_audit_account.json',
+        safety: { REQUIRE_APPROVAL: true, DRY_RUN: true, ALLOW_DESTRUCTIVE: false, ALLOW_OFFENSIVE: false },
+    },
+};
+
 const API_SERVICES: ApiServiceDef[] = [
     {
         id: 'telegram',
@@ -11632,13 +11771,13 @@ const API_SERVICES: ApiServiceDef[] = [
         id: 'github',
         name: 'GitHub',
         icon: '💻',
-        summary: 'Developer 에이전트가 이슈 읽고 코드 푸시. repo + workflow 권한 필요.',
+        summary: 'Developer/DevOps가 이슈·PR·CI를 읽고, 승인 후 브랜치/PR 작업을 수행합니다.',
         helpUrl: 'https://github.com/settings/tokens',
         agentId: 'developer',
-        comingSoon: true,
         fields: [
             { key: 'GITHUB_TOKEN', label: 'Personal Access Token', type: 'password' },
             { key: 'GITHUB_DEFAULT_REPO', label: '기본 저장소', type: 'text', placeholder: 'owner/repo' },
+            { key: 'GITHUB_APPROVAL_MODE', label: '승인 모드', type: 'select', options: ['read_only', 'draft_pr_only', 'gated_write'], help: '권장: gated_write. push/merge/delete는 승인 게이트가 필요합니다.' },
         ],
     },
     {
@@ -11648,10 +11787,60 @@ const API_SERVICES: ApiServiceDef[] = [
         summary: '인스타 비즈니스 계정 게시 + DM/댓글 분석.',
         helpUrl: 'https://developers.facebook.com/',
         agentId: 'instagram',
-        comingSoon: true,
         fields: [
             { key: 'META_ACCESS_TOKEN', label: 'Access Token', type: 'password' },
             { key: 'INSTAGRAM_BUSINESS_ID', label: 'Business Account ID', type: 'text' },
+            { key: 'INSTAGRAM_APPROVAL_MODE', label: '승인 모드', type: 'select', options: ['draft_only', 'gated_publish'], help: '권장: draft_only. 게시/DM/댓글 발송은 승인 후 실행.' },
+        ],
+    },
+    {
+        id: 'deployment',
+        name: '배포 자동화',
+        icon: '🚀',
+        summary: 'DevOps가 Vercel/Netlify/Cloudflare 배포를 준비합니다. 실제 production 배포는 승인 게이트가 필요합니다.',
+        agentId: 'devops',
+        fields: [
+            { key: 'DEPLOY_PROVIDER', label: '기본 배포 대상', type: 'select', options: ['vercel', 'netlify', 'cloudflare', 'manual'] },
+            { key: 'VERCEL_TOKEN', label: 'Vercel Token', type: 'password' },
+            { key: 'NETLIFY_AUTH_TOKEN', label: 'Netlify Auth Token', type: 'password' },
+            { key: 'CLOUDFLARE_API_TOKEN', label: 'Cloudflare API Token', type: 'password' },
+            { key: 'DEPLOY_APPROVAL_MODE', label: '승인 모드', type: 'select', options: ['dry_run', 'preview_only', 'gated_production'], help: 'production 배포는 항상 gated_production으로 취급됩니다.' },
+        ],
+    },
+    {
+        id: 'rube',
+        name: 'Rube/Composio 자동화',
+        icon: '🔁',
+        summary: 'Automation 에이전트가 SaaS API 자동화 스키마를 찾고 연결합니다. 외부 쓰기는 기본 차단됩니다.',
+        agentId: 'automation',
+        fields: [
+            { key: 'RUBE_API_KEY', label: 'Rube/Composio API Key', type: 'password' },
+            { key: 'RUBE_DEFAULT_TOOLKITS', label: '기본 툴킷', type: 'text', placeholder: 'gmail,notion,slack,telegram' },
+            { key: 'AUTOMATION_APPROVAL_MODE', label: '승인 모드', type: 'select', options: ['read_only', 'dry_run', 'gated_write'] },
+        ],
+    },
+    {
+        id: 'tavily',
+        name: 'Tavily/Web Research',
+        icon: '🔎',
+        summary: 'Researcher/Data가 웹 검색·추출·리서치를 수행합니다. 기본은 읽기 전용입니다.',
+        helpUrl: 'https://tavily.com/',
+        agentId: 'data',
+        fields: [
+            { key: 'TAVILY_API_KEY', label: 'Tavily API Key', type: 'password' },
+            { key: 'TAVILY_SEARCH_DEPTH', label: '검색 깊이', type: 'select', options: ['basic', 'advanced'] },
+        ],
+    },
+    {
+        id: 'security',
+        name: '보안 감사 도구',
+        icon: '🛡️',
+        summary: 'Security 에이전트가 의존성/시크릿/승인 정책을 점검합니다. 공격적 사용은 차단됩니다.',
+        agentId: 'security',
+        fields: [
+            { key: 'SECURITY_AUDIT_MODE', label: '감사 모드', type: 'select', options: ['read_only', 'draft_fix', 'gated_fix'] },
+            { key: 'ALLOW_DEPENDENCY_AUDIT', label: '의존성 감사', type: 'select', options: ['true', 'false'] },
+            { key: 'ALLOW_SECRET_SCAN', label: '시크릿 스캔', type: 'select', options: ['true', 'false'] },
         ],
     },
     {
@@ -11704,6 +11893,22 @@ function readAllApiConnections(): Record<string, Record<string, string>> {
     for (const svc of API_SERVICES) {
         out[svc.id] = {};
         try {
+            const linkedToolJson = API_SERVICE_TOOL_JSON[svc.id];
+            if (linkedToolJson) {
+                try {
+                    const jsonPath = path.join(getCompanyDir(), '_agents', linkedToolJson.agentId, 'tools', linkedToolJson.file);
+                    if (fs.existsSync(jsonPath)) {
+                        const cfg = JSON.parse(fs.readFileSync(jsonPath, 'utf-8') || '{}');
+                        for (const f of svc.fields) {
+                            const canonical = linkedToolJson.keyMap?.[f.key] || f.key;
+                            const raw = cfg[canonical];
+                            const v = (raw === undefined || raw === null) ? '' : String(raw).trim();
+                            out[svc.id][f.key] = looksLikeJunk(f.key, v) ? '' : v;
+                        }
+                        if (Object.values(out[svc.id]).some(v => !!v)) continue;
+                    }
+                } catch { /* fall through to config.md */ }
+            }
             /* 텔레그램은 캐노니컬 JSON을 우선 읽음 — 폴링이 읽는 단일 진실의 출처. */
             if (svc.id === 'telegram') {
                 try {
@@ -11985,6 +12190,31 @@ async function saveApiConnection(serviceId: string, values: Record<string, strin
                 }
             } catch (e: any) {
                 console.warn('[saveApiConnection] gemini_account.json sync failed:', e?.message || e);
+            }
+        }
+        const linkedToolJson = API_SERVICE_TOOL_JSON[serviceId];
+        if (linkedToolJson) {
+            try {
+                const toolDir = path.join(getCompanyDir(), '_agents', linkedToolJson.agentId, 'tools');
+                const jsonPath = path.join(toolDir, linkedToolJson.file);
+                fs.mkdirSync(toolDir, { recursive: true });
+                let existing: Record<string, any> = {};
+                if (fs.existsSync(jsonPath)) {
+                    try { existing = JSON.parse(fs.readFileSync(jsonPath, 'utf-8') || '{}'); } catch { /* malformed */ }
+                }
+                for (const f of svc.fields) {
+                    const canonical = linkedToolJson.keyMap?.[f.key] || f.key;
+                    const v = (values[f.key] || '').trim();
+                    if (v || !(canonical in existing)) existing[canonical] = v;
+                }
+                existing['_enabled'] = true;
+                existing['_managedBy'] = 'api-connections-panel';
+                existing['_updatedAt'] = new Date().toISOString();
+                existing['_safety'] = { ...(linkedToolJson.safety || {}), ...(existing['_safety'] || {}) };
+                fs.writeFileSync(jsonPath, JSON.stringify(existing, null, 2));
+                extraNote = `🔐 ${linkedToolJson.file} 동기화 완료 — 기본 안전값: approval=${existing['_safety']?.REQUIRE_APPROVAL !== false}, dry_run=${existing['_safety']?.DRY_RUN !== false}`;
+            } catch (e: any) {
+                console.warn(`[saveApiConnection] ${serviceId} tool json sync failed:`, e?.message || e);
             }
         }
         const cfgPath = path.join(getCompanyDir(), '_agents', svc.agentId, 'config.md');
@@ -12830,12 +13060,15 @@ class OfficePanel {
     /** 캐릭터 sprite를 결정. 우선순위: 사용자 LimeZu 폴더 > 번들 자산 > 빈 문자열(이모지 폴백) */
     private _resolveCharacterSprite(agentId: string): { uri: string; source: 'user' | 'bundled' | 'none' } {
         const userPath = OfficePanel._resolveUserAssetsPath();
+        const rosterIndex = Math.max(0, AGENT_ORDER.indexOf(agentId));
         if (userPath) {
             const idx: Record<string, number> = {
                 ceo: 1, youtube: 2, instagram: 3, designer: 4,
-                developer: 5, business: 6, secretary: 7
+                developer: 5, business: 6, secretary: 7, editor: 8,
+                writer: 9, researcher: 10, security: 11, devops: 12,
+                data: 13, product: 14, automation: 15, mobile: 16
             };
-            const num = idx[agentId];
+            const num = idx[agentId] || ((rosterIndex % 24) + 1);
             if (num) {
                 const padded = String(num).padStart(2, '0');
                 const candidates = [
@@ -12855,6 +13088,12 @@ class OfficePanel {
         const bundled = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${agentId}.png`);
         if (fs.existsSync(bundled.fsPath)) {
             return { uri: this._panel.webview.asWebviewUri(bundled).toString(), source: 'bundled' };
+        }
+        const fallbackIds = ['developer', 'business', 'designer', 'researcher', 'writer', 'editor', 'secretary', 'youtube', 'instagram', 'ceo'];
+        const fallbackId = fallbackIds[rosterIndex % fallbackIds.length];
+        const fallback = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${fallbackId}.png`);
+        if (fs.existsSync(fallback.fsPath)) {
+            return { uri: this._panel.webview.asWebviewUri(fallback).toString(), source: 'bundled' };
         }
         return { uri: '', source: 'none' };
     }
@@ -12969,7 +13208,14 @@ class OfficePanel {
         const world = this._resolveWorld();
         const customMapUri = this._resolveCustomOfficeMap();
         if (customMapUri) {
-            world.desks = { ...world.desks, ...CUSTOM_MAP_DESKS };
+            const customDesks: Record<string, DeskPos> = { ...CUSTOM_MAP_DESKS };
+            let autoIndex = 0;
+            for (const id of AGENT_ORDER) {
+                if (customDesks[id]) continue;
+                customDesks[id] = CUSTOM_MAP_AUTO_DESKS[autoIndex % CUSTOM_MAP_AUTO_DESKS.length];
+                autoIndex++;
+            }
+            world.desks = { ...world.desks, ...customDesks };
         }
         const workdayOn = vscode.workspace.getConfiguration('connectAiLab').get<boolean>('autoCycleEnabled', true);
         this._panel.webview.postMessage({
@@ -17361,6 +17607,8 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                                     // Prefer high-res custom portrait if declared and the file exists,
                                     // else fall back to the bundled pixel sprite.
                                     const customName = AGENTS[id].profileImage;
+                                    const fallbackIds = ['developer', 'business', 'designer', 'researcher', 'writer', 'editor', 'secretary', 'youtube', 'instagram', 'ceo'];
+                                    const rosterIndex = Math.max(0, AGENT_ORDER.indexOf(id));
                                     let portraitUri: vscode.Uri;
                                     if (customName) {
                                         const customPath = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'agents', customName);
@@ -17368,13 +17616,17 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                                             if (fs.existsSync(customPath.fsPath)) {
                                                 portraitUri = customPath;
                                             } else {
-                                                portraitUri = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${id}.png`);
+                                                const bundled = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${id}.png`);
+                                                const fallback = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${fallbackIds[rosterIndex % fallbackIds.length]}.png`);
+                                                portraitUri = fs.existsSync(bundled.fsPath) ? bundled : fallback;
                                             }
                                         } catch {
-                                            portraitUri = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${id}.png`);
+                                            portraitUri = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${fallbackIds[rosterIndex % fallbackIds.length]}.png`);
                                         }
                                     } else {
-                                        portraitUri = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${id}.png`);
+                                        const bundled = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${id}.png`);
+                                        const fallback = vscode.Uri.joinPath(this._ctx.extensionUri, 'assets', 'pixel', 'characters', `${fallbackIds[rosterIndex % fallbackIds.length]}.png`);
+                                        portraitUri = fs.existsSync(bundled.fsPath) ? bundled : fallback;
                                     }
                                     return {
                                         id,
