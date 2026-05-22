@@ -11,6 +11,12 @@ config:
 """
 import os, sys, json, subprocess, shutil
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(HERE, "web_init.json")
@@ -48,7 +54,16 @@ def _run(cmd, cwd=None, capture=True):
     """Run shell command, stream stderr live but capture stdout for return."""
     _log(f"$ {cmd}", "step")
     if capture:
-        r = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True, timeout=600)
+        r = subprocess.run(
+            cmd,
+            shell=True,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=600,
+        )
         if r.stdout:
             for line in r.stdout.splitlines()[:20]:
                 print(f"  {line}")

@@ -14,6 +14,12 @@ config:
 """
 import os, sys, json, subprocess, glob
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(HERE, "lint_test.json")
@@ -38,7 +44,16 @@ def _load(p):
 def _run(cmd, cwd, timeout=180):
     _log(f"$ {cmd}", "step")
     try:
-        r = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run(
+            cmd,
+            shell=True,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
         return r.returncode, (r.stdout or "") + "\n" + (r.stderr or "")
     except subprocess.TimeoutExpired:
         return -1, f"⏱ Timeout ({timeout}s)"

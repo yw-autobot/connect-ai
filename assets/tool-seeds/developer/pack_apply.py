@@ -18,6 +18,12 @@
 """
 import os, sys, json, subprocess, shutil
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(HERE, "pack_apply.json")
@@ -41,7 +47,16 @@ def _load(p):
 
 def _run(cmd, cwd):
     _log(f"$ {cmd}", "step")
-    r = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True, timeout=600)
+    r = subprocess.run(
+        cmd,
+        shell=True,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=600,
+    )
     if r.returncode != 0:
         for line in (r.stderr or "").splitlines()[-8:]:
             _log(line, "warn")
